@@ -1,5 +1,6 @@
 "use client";
 
+import { CreateStoreForm } from "@/components/forms/CreateStoreForm";
 import { useStoreModal } from "@/lib/hooks/modals/useStoreModal";
 import Modal from "@/components/modals/Modal";
 
@@ -14,7 +15,7 @@ export const StoreModal = () => {
       isOpen={storeModal.isOpen}
       onClose={storeModal.onClose}
     >
-      {/* TODO: form to create new store */}
+      <CreateStoreForm />
     </Modal>
   );
 };
