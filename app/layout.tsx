@@ -1,4 +1,6 @@
+import { ModalProvider } from "@/components/providers/ModalProvider";
 import ToastProvider from "@/components/providers/ToastProvider";
+import { ClerkProvider } from "@clerk/nextjs";
 import { Poppins } from "next/font/google";
 import type { Metadata } from "next";
 import "./globals.css";
@@ -19,11 +21,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${poppins.className}`}>
-        <ToastProvider />
-        {children}
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body className={`${poppins.className}`}>
+          <ToastProvider />
+          <ModalProvider />
+          {children}
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
