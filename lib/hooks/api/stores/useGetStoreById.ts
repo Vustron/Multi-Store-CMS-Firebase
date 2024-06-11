@@ -11,32 +11,27 @@ import { auth } from "@clerk/nextjs/server";
 import { Store } from "@/lib/helpers/types";
 import { redirect } from "next/navigation";
 
-export const useGetStores = () => {
+export const useGetStoreById = () => {
   const storesQuery = useQuery({
     queryKey: ["stores"],
     queryFn: async () => {
       // get user id
       const { userId } = auth();
+      // redirect if no user
+      if (!userId) {
+        redirect("/sign-in");
+      }
 
-      // init store
-      let store = null as any;
-
+      // get storesnap using id
       const storeSnap = await getDocs(
         firestoreQuery(collection(db, "stores"), where("userId", "==", userId)),
       );
 
+      let stores = [] as Store[];
+
       storeSnap.forEach((doc) => {
-        store = doc.data() as Store;
-        return;
+        stores.push(doc.data() as Store);
       });
-
-      if (store) {
-        redirect(`/${store?.id}`);
-      }
-
-      if (!store) {
-        redirect("/");
-      }
     },
   });
 

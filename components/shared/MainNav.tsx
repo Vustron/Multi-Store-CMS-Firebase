@@ -23,20 +23,26 @@ const MainNav = ({
 
   return (
     <nav className={cn("flex items-center space-x-4 pl-6 lg:space-x-6")}>
-      {routes.map((route) => (
-        <Link
-          key={route.href}
-          href={route.href}
-          className={cn(
-            "text-sm font-medium transition-colors hover:text-primary",
-            route.active
-              ? "text-muted-foreground"
-              : "text-black dark:text-white",
-          )}
-        >
-          {route.label}
-        </Link>
-      ))}
+      {routes.map((route) => {
+        const isActive =
+          pathName === route.href || pathName.startsWith(`${route.href}`);
+
+        return (
+          <Link
+            key={route.href}
+            href={route.href}
+            className={cn(
+              "text-sm font-medium transition-colors hover:text-primary",
+              {
+                "text-black dark:text-white": isActive,
+                "text-muted-foreground": !isActive,
+              },
+            )}
+          >
+            {route.label}
+          </Link>
+        );
+      })}
     </nav>
   );
 };

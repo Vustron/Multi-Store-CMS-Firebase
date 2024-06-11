@@ -39,7 +39,7 @@ export const CreateStoreForm = () => {
 
   const onSubmit = async (values: z.infer<typeof CreateStoreFormSchema>) => {
     await toast.promise(mutation.mutateAsync(values), {
-      loading: "Creating store...",
+      loading: <span className="animate-pulse">Creating Store...</span>,
       success: "Store created",
       error: "Something went wrong",
     });

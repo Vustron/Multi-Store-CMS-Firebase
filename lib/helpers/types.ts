@@ -7,5 +7,3 @@ export interface Store {
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
-
-
