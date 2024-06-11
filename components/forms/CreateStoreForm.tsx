@@ -13,7 +13,9 @@ import { useCreateStore } from "@/lib/hooks/api/stores/useCreateStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui//Button";
 import { Input } from "@/components/ui/Input";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { z } from "zod";
 
@@ -80,7 +82,16 @@ export const CreateStoreForm = () => {
                 Cancel
               </Button>
               <Button disabled={mutation.isPending} type="submit" size="sm">
-                Continue
+                {mutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 size-4 animate-spin" />
+                    <span className="animate-pulse">Creating Store...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Continue</span>
+                  </>
+                )}
               </Button>
             </div>
           </form>

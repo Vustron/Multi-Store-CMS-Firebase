@@ -1,13 +1,16 @@
 import { collection, getDocs, query, where } from "firebase/firestore";
+import Navbar from "@/components/shared/Navbar";
 import { db } from "@/lib/services/firebase";
-import { Store } from "@/lib/helpers/types";
 import { auth } from "@clerk/nextjs/server";
+import { Store } from "@/lib/helpers/types";
 import { redirect } from "next/navigation";
 
-export default async function SetupLayout({
+export default async function DashboardLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: { storeId: string };
 }) {
   // get user id
   const { userId } = auth();
@@ -19,20 +22,29 @@ export default async function SetupLayout({
   // init store
   let store = null as any;
 
-  // snapshot get all stores by the userId
+  // snapshot all the specific store using
   const storeSnap = await getDocs(
-    query(collection(db, "stores"), where("userId", "==", userId)),
+    query(
+      collection(db, "stores"),
+      where("userId", "==", userId),
+      where("id", "==", params.storeId),
+    ),
   );
 
-  // store all the
   storeSnap.forEach((doc) => {
     store = doc.data() as Store;
-    return;
   });
 
-  if (store) {
-    redirect(`/${store?.id}`);
+  if (!store) {
+    redirect("/");
   }
 
-  return <>{children}</>;
+  return (
+    <div>
+      {/* Navbar */}
+      <Navbar />
+
+      {children}
+    </div>
+  );
 }

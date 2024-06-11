@@ -4,6 +4,7 @@ import axios from "axios";
 import { z } from "zod";
 
 export const useCreateStore = () => {
+  // init query client
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -11,8 +12,9 @@ export const useCreateStore = () => {
       const { data } = await axios.post("/api/stores", values);
       return data;
     },
-    onSuccess: () => {
-      // queryClient.invalidateQueries({ queryKey: ["accounts"] });
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["stores"] });
+      window.location.assign(`${data?.id}`);
     },
   });
 
