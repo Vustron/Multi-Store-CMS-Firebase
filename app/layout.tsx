@@ -1,4 +1,5 @@
 import { ModalProvider } from "@/components/providers/ModalProvider";
+import QueryProvider from "@/components/providers/QueryProvider";
 import ToastProvider from "@/components/providers/ToastProvider";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Poppins } from "next/font/google";
@@ -24,9 +25,11 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={`${poppins.className}`}>
-          <ToastProvider />
-          <ModalProvider />
-          {children}
+          <QueryProvider>
+            <ToastProvider />
+            <ModalProvider />
+            {children}
+          </QueryProvider>
         </body>
       </html>
     </ClerkProvider>

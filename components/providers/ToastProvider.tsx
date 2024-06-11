@@ -14,7 +14,7 @@ const ToastProvider = () => {
     align-items: center;
     padding: 5px;
     padding-right: 10px;
-    width: 200px;
+    width: 280px;
     height: 50px;
     border: 2px solid
       ${(p: any) =>
