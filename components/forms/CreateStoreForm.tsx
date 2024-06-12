@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/Form";
 
 import { useCreateStore } from "@/lib/hooks/api/stores/useCreateStore";
+import { useStoreModal } from "@/lib/hooks/modals/useStoreModal";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui//Button";
 import { Input } from "@/components/ui/Input";
@@ -25,6 +26,8 @@ export const CreateStoreFormSchema = z.object({
 });
 
 export const CreateStoreForm = () => {
+  // init store modal
+  const { onClose } = useStoreModal();
   // init create store hook
   const mutation = useCreateStore();
 
@@ -77,6 +80,7 @@ export const CreateStoreForm = () => {
                 type="button"
                 variant="outline"
                 size="sm"
+                onClick={() => onClose()}
               >
                 Cancel
               </Button>

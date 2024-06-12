@@ -12,7 +12,11 @@ export const useDeleteStore = (storeId?: string) => {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const { data } = await axios.delete(`/api/stores/${storeId}`);
+      const { data } = await axios.delete(`/api/stores/${storeId}`, {
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      });
       return data;
     },
     onSuccess: () => {

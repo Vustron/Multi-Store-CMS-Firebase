@@ -17,7 +17,11 @@ export const useCreateStore = () => {
 
   const mutation = useMutation({
     mutationFn: async (values: z.infer<typeof CreateStoreFormSchema>) => {
-      const { data } = await axios.post("/api/stores", values);
+      const { data } = await axios.post("/api/stores", values, {
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      });
       return data;
     },
     onSuccess: (data: any) => {

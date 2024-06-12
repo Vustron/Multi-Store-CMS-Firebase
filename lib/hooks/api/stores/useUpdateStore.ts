@@ -14,7 +14,11 @@ export const useUpdateStore = (storeId?: string) => {
 
   const mutation = useMutation({
     mutationFn: async (values: z.infer<typeof UpdateStoreFormSchema>) => {
-      const { data } = await axios.patch(`/api/stores/${storeId}`, values);
+      const { data } = await axios.patch(`/api/stores/${storeId}`, values, {
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      });
       return data;
     },
     onSuccess: (data: any) => {
