@@ -42,7 +42,7 @@ export default async function DashboardLayout({
   return (
     <div>
       {/* Navbar */}
-      <Navbar />
+      <Navbar userId={userId} />
 
       {children}
     </div>

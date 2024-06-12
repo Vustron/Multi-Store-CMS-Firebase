@@ -13,11 +13,11 @@ export default function OverviewPage({ params }: Props) {
   // init router
   const router = useRouter();
   // get store
-  const storeQuery = useGetStore(params);
+  const store = useGetStore(params);
   // set data
-  const data = storeQuery.data;
+  const data = store.data;
   // init loading state
-  const isLoading = storeQuery.isLoading;
+  const isLoading = store.isLoading;
 
   if (isLoading) {
     return <>...fetching store</>;

@@ -1,13 +1,13 @@
-import { getDoc, doc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/lib/services/firebase";
 import { Store } from "@/lib/helpers/types";
 
-export const useGetStore = ({ storeId }: { storeId: string }) => {
+export const useGetStoreInfo = ({ storeId }: { storeId: string }) => {
   const query = useQuery({
     queryKey: ["stores", { storeId }],
     queryFn: async () => {
-      // get store
+      // get store info
       const store = (await getDoc(doc(db, "stores", storeId))).data() as Store;
       return store;
     },

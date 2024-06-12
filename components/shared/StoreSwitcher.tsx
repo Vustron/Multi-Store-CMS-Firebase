@@ -30,7 +30,7 @@ type PopoverTriggerProps = React.ComponentPropsWithoutRef<
 >;
 
 interface StoreSwitcherProps extends PopoverTriggerProps {
-  items: Store[];
+  items: Store[] | undefined;
 }
 
 const StoreSwitcher = ({ items }: StoreSwitcherProps) => {
@@ -64,7 +64,7 @@ const StoreSwitcher = ({ items }: StoreSwitcherProps) => {
   const handleSearch = (e: any) => {
     setIsSearching(e.target.value);
     setIsFilterItem(
-      formattedStores.filter((item) =>
+      formattedStores!.filter((item) =>
         item.label.toLowerCase().includes(search.toLowerCase()),
       ),
     );
@@ -81,7 +81,7 @@ const StoreSwitcher = ({ items }: StoreSwitcherProps) => {
         >
           <StoreIcon className="mr-2 size-4" />
           {currentStore?.value
-            ? formattedStores.find(
+            ? formattedStores!.find(
                 (store) => store.value === currentStore?.value,
               )?.label
             : "Select store..."}
@@ -102,7 +102,7 @@ const StoreSwitcher = ({ items }: StoreSwitcherProps) => {
           <CommandList>
             <CommandGroup heading="Stores">
               {search === "" ? (
-                formattedStores.map((item, index) => (
+                formattedStores!.map((item, index) => (
                   <StoreListItem
                     store={item}
                     key={index}

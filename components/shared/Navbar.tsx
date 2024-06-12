@@ -1,44 +1,41 @@
-import {
-  collection,
-  getDocs,
-  query as firestoreQuery,
-  where,
-} from "firebase/firestore";
+"use client";
 
-import { db } from "@/lib/services/firebase";
-import { auth } from "@clerk/nextjs/server";
-import { Store } from "@/lib/helpers/types";
-import { redirect } from "next/navigation";
+import { UserButton, ClerkLoaded, ClerkLoading } from "@clerk/nextjs";
+import { useStores } from "@/lib/hooks/api/stores/useStores";
 import StoreSwitcher from "./StoreSwitcher";
-import { UserButton } from "@clerk/nextjs";
+import { Loader2 } from "lucide-react";
 import MainNav from "./MainNav";
 
-const Navbar = async () => {
-  // get user id
-  const { userId } = auth();
-  // redirect if no user
-  if (!userId) {
-    redirect("/sign-in");
+const Navbar = ({ userId }: { userId: string }) => {
+  // fetch data
+  const { data: stores, isLoading, error } = useStores(userId);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
   }
 
-  // get storesnap using id
-  const storeSnap = await getDocs(
-    firestoreQuery(collection(db, "stores"), where("userId", "==", userId)),
-  );
-
-  let stores = [] as Store[];
-
-  storeSnap.forEach((doc) => {
-    stores.push(doc.data() as Store);
-  });
+  if (error) {
+    return <div>Error loading stores</div>;
+  }
 
   return (
     <div className="border-b">
       <div className="flex h-16 items-center px-4">
+        {/* store switcher */}
         <StoreSwitcher items={stores} />
+
+        {/* main nav */}
         <MainNav />
+
+        {/* user button */}
         <div className="ml-auto">
-          <UserButton afterSignOutUrl="/" />
+          <ClerkLoaded>
+            <UserButton afterSignOutUrl="/" />
+          </ClerkLoaded>
+
+          <ClerkLoading>
+            <Loader2 className="animate-spin text-slate-400" />
+          </ClerkLoading>
         </div>
       </div>
     </div>
