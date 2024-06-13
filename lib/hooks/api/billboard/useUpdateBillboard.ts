@@ -15,21 +15,18 @@ export const useUpdateBillboard = (storeId?: string, billboardId?: string) => {
   const mutation = useMutation({
     mutationFn: async (values: z.infer<typeof UpdateBillboardFormSchema>) => {
       const { data } = await axios.patch(
-        `/api/stores/${storeId}billboards/${billboardId}`,
+        `/api/stores/${storeId}/billboards/${billboardId}`,
         values,
-        {
-          headers: {
-            "Cache-Control": "no-cache",
-          },
-        },
       );
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["stores", { storeId }, "billboards", { billboardId }],
+        queryKey: ["stores", storeId, "billboards", billboardId],
       });
-      queryClient.invalidateQueries({ queryKey: ["stores", "billboards"] });
+      queryClient.invalidateQueries({
+        queryKey: ["stores", storeId],
+      });
       router.replace(`/${storeId}/billboards`);
       // window.location.assign(`/${data?.id}`);
     },

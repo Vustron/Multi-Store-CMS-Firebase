@@ -85,6 +85,7 @@ const ImageUpload = ({ disabled, onChange, onRemove, value }: Props) => {
                   loading="lazy"
                   blurDataURL="data:image/jpeg..."
                   placeholder="blur"
+                  sizes="(min-width: 808px) 50vw, 100vw"
                 />
 
                 <div className="absolute right-2 top-2 z-10">

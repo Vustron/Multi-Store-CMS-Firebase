@@ -58,7 +58,7 @@ const StoreSwitcher = ({ items }: StoreSwitcherProps) => {
   // init select store handler
   const onStoreSelect = (store: { value: string; label: string }) => {
     setOpen(false);
-    router.push(`${store.value}`);
+    router.replace(`/${store.value}`);
   };
   // handle search store
   const handleSearch = (e: any) => {

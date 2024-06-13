@@ -1,28 +1,30 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useGetBillboardById } from "@/lib/hooks/api/billboard/useGetBillboardById";
+import UpdateBillboardForm from "@/components/forms/UpdateBillboardForm.tsx";
 
 export default function BillboardIdPage({
   params,
 }: {
   params: { storeId: string; billboardId: string };
 }) {
-  // init router
-  const router = useRouter();
-  // // get billboard
-  // const billboard = useGetBillboards({ params });
-  // // set data
-  // const data = billboard.data;
-  // // init loading state
-  // const isLoading = billboard.isLoading;
+  // get billboard using id
+  const billboard = useGetBillboardById(params.storeId, params.billboardId);
+  // set data
+  const data = billboard.data;
+  // init loading
+  const isLoading = billboard.isLoading;
 
-  // if (isLoading) {
-  //   return <>...fetching data</>;
-  // }
+  // loading state
+  if (isLoading) {
+    return <>...fetching billboard</>;
+  }
 
   return (
     <div className="flex-col">
-      <div className="flex-1 space-y-4 p-8 pt-6">BillboardId Page</div>
+      <div className="flex-1 space-y-4 p-8 pt-6">
+        <UpdateBillboardForm storeId={params.storeId} initialData={data} />
+      </div>
     </div>
   );
 }

@@ -1,16 +1,10 @@
 import {
   doc,
-  getDocs,
-  addDoc,
-  collection,
-  query,
   serverTimestamp,
   updateDoc,
-  where,
   getDoc,
   deleteDoc,
 } from "firebase/firestore";
-
 import { NextResponse, NextRequest } from "next/server";
 import { Billboards } from "@/lib/helpers/types";
 import { db } from "@/lib/services/firebase";
@@ -141,13 +135,7 @@ export async function DELETE(
 
     await deleteDoc(billboardRef);
 
-    const billboard = (
-      await getDoc(
-        doc(db, "stores", params.storeId, "billboards", params.billboardId),
-      )
-    ).data() as Billboards;
-
-    return NextResponse.json(billboard, { status: 200 });
+    return NextResponse.json("Billboard deleted", { status: 200 });
   } catch (error) {
     console.log(`Stores_POST: ${error}`);
     return NextResponse.json("Internal Server Error", {

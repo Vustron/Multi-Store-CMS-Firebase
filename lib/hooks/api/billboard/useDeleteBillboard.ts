@@ -13,20 +13,18 @@ export const useDeleteBillboard = (storeId?: string, billboardId?: string) => {
   const mutation = useMutation({
     mutationFn: async () => {
       const { data } = await axios.delete(
-        `/api/stores/${storeId}billboards/${billboardId}`,
-        {
-          headers: {
-            "Cache-Control": "no-cache",
-          },
-        },
+        `/api/stores/${storeId}/billboards/${billboardId}`,
       );
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["stores", { storeId }, "billboards", { billboardId }],
+        queryKey: ["stores", storeId, "billboards", billboardId],
       });
-      queryClient.invalidateQueries({ queryKey: ["stores", "billboards"] });
+      queryClient.invalidateQueries({
+        queryKey: ["stores", storeId],
+      });
+
       router.replace(`/${storeId}/billboards`);
     },
   });

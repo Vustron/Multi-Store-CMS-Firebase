@@ -11,16 +11,11 @@ import {
 
 import { useCreateBillboard } from "@/lib/hooks/api/billboard/useCreateBillboard";
 import ImageUpload from "@/components/shared/ImageUpload";
-import { useConfirm } from "@/lib/hooks/misc/useConfirm";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Separator } from "@/components/ui/Separator";
-import Heading from "@/components/shared/Heading";
 import { Button } from "@/components/ui//Button";
-import { Billboards } from "@/lib/helpers/types";
 import { Input } from "@/components/ui/Input";
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
-import { Trash } from "lucide-react";
 import toast from "react-hot-toast";
 import { z } from "zod";
 
@@ -38,13 +33,7 @@ export const BillboardFormSchema = z.object({
 const CreateBillboardForm = ({ storeId }: Props) => {
   // init create store hook
   const mutation = useCreateBillboard(storeId);
-  // init delete store hook
-  // const deleteMutation = useDeleteStore(initialData?.id || "");
-  // confirm modal hook
-  const [ConfirmDialog, confirm] = useConfirm(
-    "Are you sure?",
-    "You are about to delete this billboard",
-  );
+
   // init loading state
   const isLoading = mutation.isPending;
   // init form
@@ -66,40 +55,8 @@ const CreateBillboardForm = ({ storeId }: Props) => {
     form.reset();
   };
 
-  // const handleDelete = async () => {
-  //   const ok = await confirm();
-
-  //   if (ok) {
-  //     await toast.promise(deleteMutation.mutateAsync(), {
-  //       loading: <span className="animate-pulse">Deleting Store...</span>,
-  //       success: "Store deleted",
-  //       error: "Something went wrong",
-  //     });
-  //   }
-  // };
-
   return (
     <>
-      <ConfirmDialog />
-
-      <div className="flex items-center justify-center">
-        <Heading
-          title={"Create Billboard"}
-          description={"Add a new billboard"}
-        />
-        {/* {initialData && (
-          <Button
-            className="hover:scale-110 hover:transform"
-            variant="destructive"
-            size="icon"
-            onClick={handleDelete}
-          >
-            <Trash className="size-4" />
-          </Button>
-        )} */}
-      </div>
-      <Separator />
-
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}

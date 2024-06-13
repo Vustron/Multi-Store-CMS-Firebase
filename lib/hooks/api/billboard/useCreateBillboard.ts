@@ -17,18 +17,16 @@ export const useCreateBillboard = (storeId?: string) => {
       const { data } = await axios.post(
         `/api/stores/${storeId}/billboards`,
         values,
-        {
-          headers: {
-            "Cache-Control": "no-cache",
-          },
-        },
       );
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["stores"] });
+      queryClient.invalidateQueries({
+        queryKey: ["stores", storeId],
+      });
+
       router.replace(`/${storeId}/billboards`);
-      // window.location.assign(`/${data?.id}`);
+      // window.location.assign(`/${storeId}/billboards`);
     },
   });
 

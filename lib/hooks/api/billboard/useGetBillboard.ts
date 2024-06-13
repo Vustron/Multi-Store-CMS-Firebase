@@ -1,4 +1,6 @@
-import { getDoc, doc } from "firebase/firestore";
+"use client";
+
+import { doc, getDocs, collection } from "firebase/firestore";
 import { useQuery } from "@tanstack/react-query";
 import { Billboards } from "@/lib/helpers/types";
 import { db } from "@/lib/services/firebase";
@@ -8,19 +10,19 @@ export const useGetBillboards = ({
 }: {
   params: {
     storeId: string;
-    billboardId: string;
   };
 }) => {
   const query = useQuery({
-    queryKey: ["stores", params.storeId, "billboards", params.billboardId],
-    enabled: !!params.storeId && !!params.billboardId,
+    queryKey: ["stores", params.storeId],
+    enabled: !!params.storeId,
     queryFn: async () => {
-      // Get the document from Firestore
-      const storeDoc = await getDoc(
-        doc(db, "stores", params.storeId, "billboards", params.billboardId),
-      );
-      const store = storeDoc.data() as Billboards;
-      return store;
+      const billboards = (
+        await getDocs(
+          collection(doc(db, "stores", params.storeId), "billboards"),
+        )
+      ).docs.map((doc) => doc.data()) as Billboards[];
+
+      return billboards;
     },
   });
 

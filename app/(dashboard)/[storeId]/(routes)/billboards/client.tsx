@@ -1,13 +1,19 @@
 "use client";
 
-import { useRouter, useParams } from "next/navigation";
+import { DataTable } from "@/components/shared/DataTable";
+import { BillboardColumns, columns } from "./columns";
+import { Separator } from "@/components/ui/Separator";
 import Heading from "@/components/shared/Heading";
 import { Button } from "@/components/ui/Button";
+import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 
-const BillboardClient = () => {
-  // get params
-  const params = useParams();
+interface Props {
+  data: BillboardColumns[];
+  storeId: string;
+}
+
+const BillboardClient = ({ data, storeId }: Props) => {
   // init router
   const router = useRouter();
 
@@ -20,13 +26,17 @@ const BillboardClient = () => {
         />
 
         <Button
-          onClick={() => router.push(`/${params.storeId}/billboards/create`)}
+          onClick={() => router.replace(`/${storeId}/billboards/create`)}
           className="hover:scale-110 hover:transform"
         >
           <Plus className="mr-2 size-4" />
           Add New
         </Button>
       </div>
+
+      <Separator />
+
+      <DataTable columns={columns} data={data} searchKey="label" />
     </>
   );
 };

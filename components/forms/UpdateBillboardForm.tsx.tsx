@@ -9,14 +9,15 @@ import {
   FormMessage,
 } from "@/components/ui/Form";
 
-import { deleteObject, ref } from "firebase/storage";
 import { useDeleteBillboard } from "@/lib/hooks/api/billboard/useDeleteBillboard";
 import { useUpdateBillboard } from "@/lib/hooks/api/billboard/useUpdateBillboard";
 import ImageUpload from "@/components/shared/ImageUpload";
 import { useConfirm } from "@/lib/hooks/misc/useConfirm";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Separator } from "@/components/ui/Separator";
+import { deleteObject, ref } from "firebase/storage";
 import Heading from "@/components/shared/Heading";
+import { storage } from "@/lib/services/firebase";
 import { Button } from "@/components/ui//Button";
 import { Billboards } from "@/lib/helpers/types";
 import { Input } from "@/components/ui/Input";
@@ -25,10 +26,9 @@ import { Loader2 } from "lucide-react";
 import { Trash } from "lucide-react";
 import toast from "react-hot-toast";
 import { z } from "zod";
-import { storage } from "@/lib/services/firebase";
 
 interface Props {
-  initialData?: Billboards;
+  initialData: Billboards | undefined;
   storeId?: string;
 }
 
@@ -75,12 +75,12 @@ const UpdateBillboardForm = ({ initialData, storeId }: Props) => {
     if (ok) {
       const { imageUrl } = form.getValues();
 
-      await deleteObject(ref(storage, imageUrl)).then(async () => {
-        await toast.promise(deleteMutation.mutateAsync(), {
-          loading: <span className="animate-pulse">Deleting Billboard...</span>,
-          success: "Billboard deleted",
-          error: "Something went wrong",
-        });
+      await deleteObject(ref(storage, imageUrl));
+
+      await toast.promise(deleteMutation.mutateAsync(), {
+        loading: <span className="animate-pulse">Deleting Billboard...</span>,
+        success: "Billboard deleted",
+        error: "Something went wrong",
       });
     }
   };
@@ -91,8 +91,8 @@ const UpdateBillboardForm = ({ initialData, storeId }: Props) => {
 
       <div className="flex items-center justify-center">
         <Heading
-          title={"Create Billboard"}
-          description={"Add a new billboard"}
+          title={"Edit Billboard"}
+          description={"Edit a new billboard"}
         />
         {initialData && (
           <Button

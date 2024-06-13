@@ -3,10 +3,8 @@ import {
   getDocs,
   addDoc,
   collection,
-  query,
   serverTimestamp,
   updateDoc,
-  where,
   getDoc,
 } from "firebase/firestore";
 
@@ -88,13 +86,6 @@ export async function GET(
   { params }: { params: { storeId: string } },
 ) {
   try {
-    // // get user
-    // const { userId } = auth();
-
-    // // throw error if no user
-    // if (!userId) {
-    //   return NextResponse.json("Unauthorized", { status: 401 });
-    // }
     // throw error if no store id
     if (!params.storeId) {
       return NextResponse.json("Store ID is missing", {
