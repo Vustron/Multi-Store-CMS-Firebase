@@ -1,6 +1,11 @@
 "use client";
 
-import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import {
+  deleteObject,
+  getDownloadURL,
+  ref,
+  uploadBytesResumable,
+} from "firebase/storage";
 import { ImagePlus, Loader, Trash } from "lucide-react";
 import useMounted from "@/lib/hooks/misc/useMounted";
 import { storage } from "@/lib/services/firebase";
@@ -55,6 +60,13 @@ const ImageUpload = ({ disabled, onChange, onRemove, value }: Props) => {
     );
   };
 
+  const onDelete = (url: string) => {
+    onRemove(url);
+    deleteObject(ref(storage, url)).then(() => {
+      toast.success("Image Removed");
+    });
+  };
+
   return (
     <div>
       {value && value.length > 0 ? (
@@ -80,7 +92,8 @@ const ImageUpload = ({ disabled, onChange, onRemove, value }: Props) => {
                     className="hover:scale-110 hover:transform"
                     variant="destructive"
                     size="icon"
-                    onClick={() => {}}
+                    onClick={() => onDelete(url)}
+                    type="button"
                   >
                     <Trash className="size-4" />
                   </Button>

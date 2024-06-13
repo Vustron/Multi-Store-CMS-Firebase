@@ -9,7 +9,9 @@ import {
   FormMessage,
 } from "@/components/ui/Form";
 
-import { useCreateBillboard } from "@/lib/hooks/api/billboard/useCreateBillboard";
+import { deleteObject, ref } from "firebase/storage";
+import { useDeleteBillboard } from "@/lib/hooks/api/billboard/useDeleteBillboard";
+import { useUpdateBillboard } from "@/lib/hooks/api/billboard/useUpdateBillboard";
 import ImageUpload from "@/components/shared/ImageUpload";
 import { useConfirm } from "@/lib/hooks/misc/useConfirm";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,60 +25,65 @@ import { Loader2 } from "lucide-react";
 import { Trash } from "lucide-react";
 import toast from "react-hot-toast";
 import { z } from "zod";
+import { storage } from "@/lib/services/firebase";
 
 interface Props {
+  initialData?: Billboards;
   storeId?: string;
 }
 
-export const BillboardFormSchema = z.object({
+export const UpdateBillboardFormSchema = z.object({
   label: z.string().min(3, {
     message: "Billboard name must be at least three characters.",
   }),
   imageUrl: z.string().min(1, { message: "Image URL is required." }),
 });
 
-const CreateBillboardForm = ({ storeId }: Props) => {
+const UpdateBillboardForm = ({ initialData, storeId }: Props) => {
   // init create store hook
-  const mutation = useCreateBillboard(storeId);
+  const mutation = useUpdateBillboard(storeId, initialData?.id || "");
   // init delete store hook
-  // const deleteMutation = useDeleteStore(initialData?.id || "");
+  const deleteMutation = useDeleteBillboard(storeId, initialData?.id || "");
   // confirm modal hook
   const [ConfirmDialog, confirm] = useConfirm(
     "Are you sure?",
     "You are about to delete this billboard",
   );
   // init loading state
-  const isLoading = mutation.isPending;
+  const isLoading = mutation.isPending || deleteMutation.isPending;
   // init form
-  const form = useForm<z.infer<typeof BillboardFormSchema>>({
-    resolver: zodResolver(BillboardFormSchema),
-    defaultValues: {
-      label: "",
-      imageUrl: "",
-    },
+  const form = useForm<z.infer<typeof UpdateBillboardFormSchema>>({
+    resolver: zodResolver(UpdateBillboardFormSchema),
+    defaultValues: initialData,
   });
 
-  const onSubmit = async (values: z.infer<typeof BillboardFormSchema>) => {
+  const onSubmit = async (
+    values: z.infer<typeof UpdateBillboardFormSchema>,
+  ) => {
     await toast.promise(mutation.mutateAsync(values), {
-      loading: <span className="animate-pulse">Creating Billboard...</span>,
-      success: "Billboard created",
+      loading: <span className="animate-pulse">Updating Billboard...</span>,
+      success: "Billboard updated",
       error: "Something went wrong",
     });
 
     form.reset();
   };
 
-  // const handleDelete = async () => {
-  //   const ok = await confirm();
+  const handleDelete = async () => {
+    const ok = await confirm();
 
-  //   if (ok) {
-  //     await toast.promise(deleteMutation.mutateAsync(), {
-  //       loading: <span className="animate-pulse">Deleting Store...</span>,
-  //       success: "Store deleted",
-  //       error: "Something went wrong",
-  //     });
-  //   }
-  // };
+    if (ok) {
+      const { imageUrl } = form.getValues();
+
+      await deleteObject(ref(storage, imageUrl)).then(async () => {
+        await toast.promise(deleteMutation.mutateAsync(), {
+          loading: <span className="animate-pulse">Deleting Billboard...</span>,
+          success: "Billboard deleted",
+          error: "Something went wrong",
+        });
+      });
+    }
+  };
 
   return (
     <>
@@ -87,7 +94,7 @@ const CreateBillboardForm = ({ storeId }: Props) => {
           title={"Create Billboard"}
           description={"Add a new billboard"}
         />
-        {/* {initialData && (
+        {initialData && (
           <Button
             className="hover:scale-110 hover:transform"
             variant="destructive"
@@ -96,7 +103,7 @@ const CreateBillboardForm = ({ storeId }: Props) => {
           >
             <Trash className="size-4" />
           </Button>
-        )} */}
+        )}
       </div>
       <Separator />
 
@@ -153,11 +160,11 @@ const CreateBillboardForm = ({ storeId }: Props) => {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
-                <span className="animate-pulse">Creating billboard...</span>
+                <span className="animate-pulse">Updating billboard...</span>
               </>
             ) : (
               <>
-                <span>Create Billboard</span>
+                <span>Save changes</span>
               </>
             )}
           </Button>
@@ -167,4 +174,4 @@ const CreateBillboardForm = ({ storeId }: Props) => {
   );
 };
 
-export default CreateBillboardForm;
+export default UpdateBillboardForm;

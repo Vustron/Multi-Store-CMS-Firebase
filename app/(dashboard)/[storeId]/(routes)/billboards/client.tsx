@@ -20,7 +20,7 @@ const BillboardClient = () => {
         />
 
         <Button
-          onClick={() => router.push(`/${params.storeId}/billboards/new`)}
+          onClick={() => router.push(`/${params.storeId}/billboards/create`)}
           className="hover:scale-110 hover:transform"
         >
           <Plus className="mr-2 size-4" />
