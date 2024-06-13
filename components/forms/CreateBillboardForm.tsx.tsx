@@ -91,11 +91,11 @@ const CreateBillboardForm = ({ storeId }: Props) => {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Label</FormLabel>
+                  <FormLabel>Billboard name</FormLabel>
                   <FormControl>
                     <Input
                       disabled={isLoading}
-                      placeholder="Your billboard name"
+                      placeholder="Billboard name for your store"
                       {...field}
                     />
                   </FormControl>

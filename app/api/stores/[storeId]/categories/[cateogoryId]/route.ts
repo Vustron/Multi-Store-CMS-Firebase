@@ -5,15 +5,16 @@ import {
   getDoc,
   deleteDoc,
 } from "firebase/firestore";
+
 import { NextResponse, NextRequest } from "next/server";
-import { Billboards } from "@/lib/helpers/types";
+import { Billboards, Category } from "@/lib/helpers/types";
 import { db } from "@/lib/services/firebase";
 import { auth } from "@clerk/nextjs/server";
 
-// patch billboard handler
+// patch category handler
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { storeId: string; billboardId: string } },
+  { params }: { params: { storeId: string; categoryId: string } },
 ) {
   try {
     // get user
@@ -24,11 +25,14 @@ export async function PATCH(
     if (!userId) {
       return NextResponse.json("Unauthorized", { status: 401 });
     }
-    // throw error if no store name
+    // throw error if no data
     if (!body) {
-      return NextResponse.json("Billboard name or imageUrl is missing", {
-        status: 400,
-      });
+      return NextResponse.json(
+        "Category Name or Billboard name or Billboard ID is missing",
+        {
+          status: 400,
+        },
+      );
     }
     // throw error if no store id
     if (!params.storeId) {
@@ -36,14 +40,15 @@ export async function PATCH(
         status: 400,
       });
     }
-    // throw error if no billboard id
-    if (!params.billboardId) {
+
+    // throw error if no category id
+    if (!params.categoryId) {
       return NextResponse.json("Billboard ID is missing", {
         status: 400,
       });
     }
     // assign data
-    const { label, imageUrl } = body;
+    const { name, billboardLabel, billboardId } = body;
 
     const store = await getDoc(doc(db, "stores", params.storeId));
 
@@ -55,33 +60,34 @@ export async function PATCH(
       }
     }
 
-    const billboardRef = await getDoc(
-      doc(db, "stores", params.storeId, "billboards", params.billboardId),
+    const categoryRef = await getDoc(
+      doc(db, "stores", params.storeId, "categories", params.categoryId),
     );
 
-    if (billboardRef.exists()) {
+    if (categoryRef.exists()) {
       await updateDoc(
-        doc(db, "stores", params.storeId, "billboards", params.billboardId),
+        doc(db, "stores", params.storeId, "categories", params.categoryId),
         {
-          ...billboardRef.data(),
-          label,
-          imageUrl,
+          ...categoryRef.data(),
+          name,
+          billboardId,
+          billboardLabel,
           updatedAt: serverTimestamp(),
         },
       );
     } else {
-      return NextResponse.json("Billboard not found", { status: 404 });
+      return NextResponse.json("Category not found", { status: 404 });
     }
 
-    const billboard = (
+    const category = (
       await getDoc(
-        doc(db, "stores", params.storeId, "billboards", params.billboardId),
+        doc(db, "stores", params.storeId, "categories", params.categoryId),
       )
-    ).data() as Billboards;
+    ).data() as Category;
 
-    return NextResponse.json(billboard, { status: 200 });
+    return NextResponse.json(category, { status: 200 });
   } catch (error) {
-    console.log(`BILLBOARD_POST: ${error}`);
+    console.log(`CATEGORIES_PATCH: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });
@@ -91,7 +97,7 @@ export async function PATCH(
 // delete billboard handler
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { storeId: string; billboardId: string } },
+  { params }: { params: { storeId: string; categoryId: string } },
 ) {
   try {
     // get user
@@ -108,9 +114,9 @@ export async function DELETE(
         status: 400,
       });
     }
-    // throw error if no billboard id
-    if (!params.billboardId) {
-      return NextResponse.json("Billboard ID is missing", {
+    // throw error if no category id
+    if (!params.categoryId) {
+      return NextResponse.json("Category ID is missing", {
         status: 400,
       });
     }
@@ -125,19 +131,19 @@ export async function DELETE(
       }
     }
 
-    const billboardRef = doc(
+    const categoryRef = doc(
       db,
       "stores",
       params.storeId,
       "billboards",
-      params.billboardId,
+      params.categoryId,
     );
 
-    await deleteDoc(billboardRef);
+    await deleteDoc(categoryRef);
 
-    return NextResponse.json("Billboard deleted", { status: 200 });
+    return NextResponse.json("Category deleted", { status: 200 });
   } catch (error) {
-    console.log(`BILLBOARD_DELETE: ${error}`);
+    console.log(`CATEGORY_DELETE: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });

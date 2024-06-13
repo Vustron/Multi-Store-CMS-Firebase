@@ -9,11 +9,11 @@ import {
 } from "firebase/firestore";
 
 import { NextResponse, NextRequest } from "next/server";
-import { Billboards } from "@/lib/helpers/types";
+import { Category } from "@/lib/helpers/types";
 import { db } from "@/lib/services/firebase";
 import { auth } from "@clerk/nextjs/server";
 
-// create new billboard handler
+// create new category handler
 export async function POST(
   request: NextRequest,
   { params }: { params: { storeId: string } },
@@ -27,11 +27,14 @@ export async function POST(
     if (!userId) {
       return NextResponse.json("Unauthorized", { status: 401 });
     }
-    // throw error if no store name
+    // throw error if no data
     if (!body) {
-      return NextResponse.json("Billboard name or imageUrl is missing", {
-        status: 400,
-      });
+      return NextResponse.json(
+        "Category Name or Billboard name or Billboard ID is missing",
+        {
+          status: 400,
+        },
+      );
     }
     // throw error if no store id
     if (!params.storeId) {
@@ -40,7 +43,7 @@ export async function POST(
       });
     }
     // assign data
-    const { label, imageUrl } = body;
+    const { name, billboardLabel, billboardId } = body;
 
     const store = await getDoc(doc(db, "stores", params.storeId));
 
@@ -52,35 +55,36 @@ export async function POST(
       }
     }
 
-    const billboardData = {
-      label,
-      imageUrl,
+    const categoryData = {
+      name,
+      billboardLabel,
+      billboardId,
       createdAt: serverTimestamp(),
     };
 
-    const billboardRef = await addDoc(
-      collection(db, "stores", params.storeId, "billboards"),
-      billboardData,
+    const categoryRef = await addDoc(
+      collection(db, "stores", params.storeId, "categories"),
+      categoryData,
     );
 
-    const id = billboardRef.id;
+    const id = categoryRef.id;
 
-    await updateDoc(doc(db, "stores", params.storeId, "billboards", id), {
-      ...billboardData,
+    await updateDoc(doc(db, "stores", params.storeId, "categories", id), {
+      ...categoryData,
       id,
       updatedAt: serverTimestamp(),
     });
 
-    return NextResponse.json({ id, ...billboardData }, { status: 200 });
+    return NextResponse.json({ id, ...categoryData }, { status: 200 });
   } catch (error) {
-    console.log(`STORES_POST: ${error}`);
+    console.log(`CATEGORIES_POST: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });
   }
 }
 
-// get all stores handler
+// get all categories handler
 export async function GET(
   request: NextRequest,
   { params }: { params: { storeId: string } },
@@ -93,13 +97,13 @@ export async function GET(
       });
     }
 
-    const billboardsData = (
-      await getDocs(collection(doc(db, "stores", params.storeId), "billboards"))
-    ).docs.map((doc) => doc.data()) as Billboards[];
+    const categoriesData = (
+      await getDocs(collection(doc(db, "stores", params.storeId), "categories"))
+    ).docs.map((doc) => doc.data()) as Category[];
 
-    return NextResponse.json(billboardsData, { status: 200 });
+    return NextResponse.json(categoriesData, { status: 200 });
   } catch (error) {
-    console.log(`STORES_GET: ${error}`);
+    console.log(`CATEGORIES_GET: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });

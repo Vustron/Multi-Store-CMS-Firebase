@@ -80,7 +80,7 @@ export async function DELETE(
       status: 200,
     });
   } catch (error) {
-    console.log(`Stores_PATCH: ${error}`);
+    console.log(`STORES_PATCH: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });
@@ -132,7 +132,7 @@ export async function GET(request: Request) {
       return NextResponse.json("Store not found", { status: 404 });
     }
   } catch (error) {
-    console.log(`Store_GET: ${error}`);
+    console.log(`STORES_GET: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });

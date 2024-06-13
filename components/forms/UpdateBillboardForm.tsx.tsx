@@ -75,12 +75,12 @@ const UpdateBillboardForm = ({ initialData, storeId }: Props) => {
     if (ok) {
       const { imageUrl } = form.getValues();
 
-      await deleteObject(ref(storage, imageUrl));
-
-      await toast.promise(deleteMutation.mutateAsync(), {
-        loading: <span className="animate-pulse">Deleting Billboard...</span>,
-        success: "Billboard deleted",
-        error: "Something went wrong",
+      await deleteObject(ref(storage, imageUrl)).then(async () => {
+        await toast.promise(deleteMutation.mutateAsync(), {
+          loading: <span className="animate-pulse">Deleting Billboard...</span>,
+          success: "Billboard deleted",
+          error: "Something went wrong",
+        });
       });
     }
   };

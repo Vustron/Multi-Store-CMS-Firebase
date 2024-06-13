@@ -2,10 +2,10 @@
 
 import { doc, getDocs, collection } from "firebase/firestore";
 import { useQuery } from "@tanstack/react-query";
-import { Billboards } from "@/lib/helpers/types";
+import { Category } from "@/lib/helpers/types";
 import { db } from "@/lib/services/firebase";
 
-export const useGetBillboards = ({
+export const useGetCategories = ({
   params,
 }: {
   params: {
@@ -16,15 +16,13 @@ export const useGetBillboards = ({
     queryKey: ["stores", params.storeId],
     enabled: !!params.storeId,
     queryFn: async () => {
-      const billboards = (
+      const categories = (
         await getDocs(
-          collection(doc(db, "stores", params.storeId), "billboards"),
+          collection(doc(db, "stores", params.storeId), "categories"),
         )
-      ).docs.map((doc) => doc.data()) as Billboards[];
+      ).docs.map((doc) => doc.data()) as Category[];
 
-      billboards.sort((a, b) => a.label.localeCompare(b.label));
-
-      return billboards;
+      return categories;
     },
   });
 

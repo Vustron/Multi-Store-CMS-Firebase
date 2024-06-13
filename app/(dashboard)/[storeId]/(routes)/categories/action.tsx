@@ -22,7 +22,7 @@ interface Props {
   data: BillboardColumns;
 }
 
-const BillboardActions = ({ data }: Props) => {
+const CategoryActions = ({ data }: Props) => {
   // init router
   const router = useRouter();
   // init params
@@ -97,4 +97,4 @@ const BillboardActions = ({ data }: Props) => {
   );
 };
 
-export default BillboardActions;
+export default CategoryActions;

@@ -1,19 +1,19 @@
 "use client";
 
 import { DataTable } from "@/components/shared/DataTable";
-import { BillboardColumns, columns } from "./columns";
 import { Separator } from "@/components/ui/Separator";
+import { CategoryColumns, columns } from "./columns";
 import Heading from "@/components/shared/Heading";
 import { Button } from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 
 interface Props {
-  data: BillboardColumns[];
+  data: CategoryColumns[];
   storeId: string;
 }
 
-const BillboardClient = ({ data, storeId }: Props) => {
+const CategoriesClient = ({ data, storeId }: Props) => {
   // init router
   const router = useRouter();
 
@@ -21,12 +21,12 @@ const BillboardClient = ({ data, storeId }: Props) => {
     <>
       <div className="flex items-center justify-between">
         <Heading
-          title={`Billboards (${data.length})`}
-          description="Manage billboards for your store"
+          title={`Categories (${data.length})`}
+          description="Manage categories for your store"
         />
 
         <Button
-          onClick={() => router.replace(`/${storeId}/billboards/create`)}
+          onClick={() => router.replace(`/${storeId}/categories/create`)}
           className="hover:scale-110 hover:transform"
         >
           <Plus className="mr-2 size-4" />
@@ -36,9 +36,9 @@ const BillboardClient = ({ data, storeId }: Props) => {
 
       <Separator />
 
-      <DataTable columns={columns} data={data} searchKey="label" />
+      <DataTable columns={columns} data={data} searchKey="name" />
     </>
   );
 };
 
-export default BillboardClient;
+export default CategoriesClient;

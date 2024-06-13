@@ -1,30 +1,20 @@
 "use client";
 
-import CellImage from "@/components/shared/CellImage";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/Button";
 import { ArrowUpDown } from "lucide-react";
-import BillboardActions from "./action";
+import CategoryActions from "./action";
 
-export type BillboardColumns = {
+export type CategoryColumns = {
   id: string;
-  label: string;
-  imageUrl: string;
+  billboardLabel: string;
+  name: string;
   createdAt: string;
 };
 
-export const columns: ColumnDef<BillboardColumns>[] = [
+export const columns: ColumnDef<CategoryColumns>[] = [
   {
-    accessorKey: "imageUrl",
-    header: "Image",
-    cell: ({ row }) => {
-      const { imageUrl } = row.original;
-
-      return <CellImage imageUrl={imageUrl} />;
-    },
-  },
-  {
-    accessorKey: "label",
+    accessorKey: "billboardLabel",
     header: ({ column }) => {
       return (
         <Button
@@ -32,6 +22,20 @@ export const columns: ColumnDef<BillboardColumns>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Billboard
+          <ArrowUpDown className="ml-2 size-4" />
+        </Button>
+      );
+    },
+  },
+  {
+    accessorKey: "name",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Category
           <ArrowUpDown className="ml-2 size-4" />
         </Button>
       );
@@ -54,7 +58,7 @@ export const columns: ColumnDef<BillboardColumns>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      return <BillboardActions data={row.original} />;
+      return <CategoryActions data={row.original} />;
     },
   },
 ];
