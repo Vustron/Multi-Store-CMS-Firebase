@@ -23,7 +23,6 @@ export const useCreateStore = () => {
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["stores"] });
       router.replace(`/${data?.id}`);
-      // window.location.assign(`/${data?.id}`);
       onClose();
     },
   });

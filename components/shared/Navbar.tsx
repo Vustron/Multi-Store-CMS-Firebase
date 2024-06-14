@@ -10,6 +10,7 @@ const Navbar = ({ userId }: { userId: string }) => {
   // fetch data
   const { data: stores, isLoading, error } = useStores(userId);
 
+  // loading state
   if (isLoading) {
     return <div>Loading...</div>;
   }

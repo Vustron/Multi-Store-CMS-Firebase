@@ -1,4 +1,4 @@
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/services/firebase";
 import { Store } from "@/lib/helpers/types";
 import { auth } from "@clerk/nextjs/server";
