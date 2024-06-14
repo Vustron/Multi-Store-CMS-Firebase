@@ -9,17 +9,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/DropdownMenu";
 
-import { useDeleteBillboard } from "@/lib/hooks/api/billboard/useDeleteBillboard";
+import { useDeleteCategory } from "@/lib/hooks/api/categories/useDeleteCategory";
 import { Copy, MoreHorizontal, Trash, Pencil } from "lucide-react";
 import { useConfirm } from "@/lib/hooks/misc/useConfirm";
 import { useParams, useRouter } from "next/navigation";
-import { deleteObject, ref } from "firebase/storage";
-import { storage } from "@/lib/services/firebase";
 import { Button } from "@/components/ui/Button";
-import { BillboardColumns } from "./columns";
+import { CategoryColumns } from "./columns";
 import { toast } from "react-hot-toast";
+
 interface Props {
-  data: BillboardColumns;
+  data: CategoryColumns;
 }
 
 const CategoryActions = ({ data }: Props) => {
@@ -32,23 +31,21 @@ const CategoryActions = ({ data }: Props) => {
     ? params.storeId[0]
     : params.storeId;
   // init delete store hook
-  const deleteMutation = useDeleteBillboard(storeId, data.id);
+  const deleteMutation = useDeleteCategory(storeId, data.id);
   // confirm modal hook
   const [ConfirmDialog, confirm] = useConfirm(
     "Are you sure?",
-    "You are about to delete this billboard",
+    "You are about to delete this category",
   );
 
   const handleDelete = async () => {
     const ok = await confirm();
 
     if (ok) {
-      await deleteObject(ref(storage, data.imageUrl)).then(async () => {
-        await toast.promise(deleteMutation.mutateAsync(), {
-          loading: <span className="animate-pulse">Deleting Billboard...</span>,
-          success: "Billboard deleted",
-          error: "Something went wrong",
-        });
+      await toast.promise(deleteMutation.mutateAsync(), {
+        loading: <span className="animate-pulse">Deleting Category...</span>,
+        success: "Category deleted",
+        error: "Something went wrong",
       });
     }
   };
@@ -80,7 +77,7 @@ const CategoryActions = ({ data }: Props) => {
           {/* edit */}
           <DropdownMenuItem
             onClick={() =>
-              router.push(`/${params.storeId}/billboards/${data.id}`)
+              router.push(`/${params.storeId}/categories/${data.id}`)
             }
           >
             <Pencil className="mr-2 size-4" />

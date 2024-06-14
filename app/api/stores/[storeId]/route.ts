@@ -9,6 +9,7 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { NextResponse, NextRequest } from "next/server";
+import redisClient from "@/lib/services/redis";
 import { db } from "@/lib/services/firebase";
 import { auth } from "@clerk/nextjs/server";
 import { Store } from "@/lib/helpers/types";
@@ -41,6 +42,10 @@ export async function PATCH(
     const docRef = doc(db, "stores", params.storeId);
     await updateDoc(docRef, { name });
     const store = (await getDoc(docRef)).data() as Store;
+
+    // Invalidate the Redis cache
+    const cacheKey = `store_${userId}_${params.storeId}`;
+    await redisClient.del(cacheKey);
 
     return NextResponse.json(store, { status: 200 });
   } catch (error) {
@@ -76,6 +81,10 @@ export async function DELETE(
 
     await deleteDoc(docRef);
 
+    // Invalidate the Redis cache
+    const cacheKey = `store_${userId}_${params.storeId}`;
+    await redisClient.del(cacheKey);
+
     return NextResponse.json("Store and sub-collections deleted", {
       status: 200,
     });
@@ -88,46 +97,44 @@ export async function DELETE(
 }
 
 // get stores by id handler
-export async function GET(request: Request) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { storeId: string } },
+) {
   try {
     // get user
     const { userId } = auth();
-
-    // init search params
-    const { searchParams } = new URL(request.url);
-
-    // get store id from search params
-    const storeId = searchParams.get("storeId");
-
     // throw error if no user
     if (!userId) {
       return NextResponse.json("Unauthorized", { status: 401 });
     }
-
     // if there's no userId throw an error
-    if (!storeId) {
+    if (!params.storeId) {
       return NextResponse.json("Store ID is missing", { status: 400 });
     }
 
-    // Initialize store
-    let store = null as any;
+    const cacheKey = `store_${userId}_${params.storeId}`;
+    const cachedStore = await redisClient.get(cacheKey);
 
-    // Get stores based on store id and user id
+    if (cachedStore) {
+      return NextResponse.json(JSON.parse(cachedStore), { status: 200 });
+    }
+
     const storeSnap = await getDocs(
-      query(
-        collection(db, "stores"),
-        where("userId", "==", userId),
-        where("id", "==", storeId),
-      ),
+      query(collection(db, "stores"), where("userId", "==", userId)),
     );
 
-    // Store the first snapshot found
+    const stores: Store[] = [];
+
     storeSnap.forEach((doc) => {
-      store = doc.data() as Store;
+      stores.push(doc.data() as Store);
     });
 
-    if (store) {
-      return NextResponse.json(store, { status: 200 });
+    if (stores) {
+      await redisClient.set(cacheKey, JSON.stringify(stores), {
+        EX: 60 * 60, // Cache expires in 1 hour
+      });
+      return NextResponse.json(stores, { status: 200 });
     } else {
       return NextResponse.json("Store not found", { status: 404 });
     }

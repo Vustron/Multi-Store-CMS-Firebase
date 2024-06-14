@@ -4,6 +4,7 @@ import { useGetBillboards } from "@/lib/hooks/api/billboard/useGetBillboard";
 import { BillboardColumns } from "./columns";
 import BillboardClient from "./client";
 import { format } from "date-fns";
+import { useEffect } from "react";
 
 interface Props {
   params: {
@@ -14,6 +15,12 @@ interface Props {
 export default function BillboardsPage({ params }: Props) {
   // get billboard
   const billboard = useGetBillboards({ params });
+
+  // Refetch data when component mounts
+  useEffect(() => {
+    billboard.refetch();
+  }, [billboard.refetch]);
+
   // set data
   const data = billboard.data || [];
   // init loading state

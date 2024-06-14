@@ -90,10 +90,7 @@ const UpdateBillboardForm = ({ initialData, storeId }: Props) => {
       <ConfirmDialog />
 
       <div className="flex items-center justify-center">
-        <Heading
-          title={"Edit Billboard"}
-          description={"Edit a new billboard"}
-        />
+        <Heading title={"Edit Billboard"} description={"Edit a billboard"} />
         {initialData && (
           <Button
             className="hover:scale-110 hover:transform"

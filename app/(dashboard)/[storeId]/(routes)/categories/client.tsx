@@ -4,6 +4,7 @@ import { DataTable } from "@/components/shared/DataTable";
 import { Separator } from "@/components/ui/Separator";
 import { CategoryColumns, columns } from "./columns";
 import Heading from "@/components/shared/Heading";
+import ApiList from "@/components/shared/ApiList";
 import { Button } from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
@@ -35,8 +36,12 @@ const CategoriesClient = ({ data, storeId }: Props) => {
       </div>
 
       <Separator />
-
       <DataTable columns={columns} data={data} searchKey="name" />
+
+      <Heading title="API" description="API calls for categories" />
+      <Separator />
+
+      <ApiList entityName={"categories"} entityNameId={"categoryId"} />
     </>
   );
 };

@@ -3,6 +3,7 @@
 import { DataTable } from "@/components/shared/DataTable";
 import { BillboardColumns, columns } from "./columns";
 import { Separator } from "@/components/ui/Separator";
+import ApiList from "@/components/shared/ApiList";
 import Heading from "@/components/shared/Heading";
 import { Button } from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
@@ -35,8 +36,12 @@ const BillboardClient = ({ data, storeId }: Props) => {
       </div>
 
       <Separator />
-
       <DataTable columns={columns} data={data} searchKey="label" />
+
+      <Heading title="API" description="API calls for billboards" />
+      <Separator />
+
+      <ApiList entityName={"billboards"} entityNameId={"billboardId"} />
     </>
   );
 };

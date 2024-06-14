@@ -7,6 +7,7 @@ import {
 } from "firebase/firestore";
 import { NextResponse, NextRequest } from "next/server";
 import { Billboards } from "@/lib/helpers/types";
+import redisClient from "@/lib/services/redis";
 import { db } from "@/lib/services/firebase";
 import { auth } from "@clerk/nextjs/server";
 
@@ -25,7 +26,7 @@ export async function PATCH(
       return NextResponse.json("Unauthorized", { status: 401 });
     }
     // throw error if no store name
-    if (!body) {
+    if (!body || !body.label || !body.imageUrl) {
       return NextResponse.json("Billboard name or imageUrl is missing", {
         status: 400,
       });
@@ -78,6 +79,10 @@ export async function PATCH(
         doc(db, "stores", params.storeId, "billboards", params.billboardId),
       )
     ).data() as Billboards;
+
+    // Invalidate the Redis cache
+    const cacheKey = `billboard_${params.storeId}_${params.billboardId}`;
+    await redisClient.del(cacheKey);
 
     return NextResponse.json(billboard, { status: 200 });
   } catch (error) {
@@ -132,6 +137,10 @@ export async function DELETE(
       "billboards",
       params.billboardId,
     );
+
+    // Invalidate the Redis cache
+    const cacheKey = `billboard_${params.storeId}_${params.billboardId}`;
+    await redisClient.del(cacheKey);
 
     await deleteDoc(billboardRef);
 

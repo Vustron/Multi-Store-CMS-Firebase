@@ -10,6 +10,7 @@ import {
 
 import { NextResponse, NextRequest } from "next/server";
 import { Billboards } from "@/lib/helpers/types";
+import redisClient from "@/lib/services/redis";
 import { db } from "@/lib/services/firebase";
 import { auth } from "@clerk/nextjs/server";
 
@@ -28,7 +29,7 @@ export async function POST(
       return NextResponse.json("Unauthorized", { status: 401 });
     }
     // throw error if no store name
-    if (!body) {
+    if (!body || !body.label || !body.imageUrl) {
       return NextResponse.json("Billboard name or imageUrl is missing", {
         status: 400,
       });
@@ -71,9 +72,13 @@ export async function POST(
       updatedAt: serverTimestamp(),
     });
 
+    // Invalidate the Redis cache
+    const cacheKey = `billboards_${params.storeId}`;
+    await redisClient.del(cacheKey);
+
     return NextResponse.json({ id, ...billboardData }, { status: 200 });
   } catch (error) {
-    console.log(`STORES_POST: ${error}`);
+    console.log(`BILLBOARDS_POST: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });
@@ -93,13 +98,24 @@ export async function GET(
       });
     }
 
+    const cacheKey = `billboards_${params.storeId}`;
+    const cachedBillboards = await redisClient.get(cacheKey);
+
+    if (cachedBillboards) {
+      return NextResponse.json(JSON.parse(cachedBillboards), { status: 200 });
+    }
+
     const billboardsData = (
       await getDocs(collection(doc(db, "stores", params.storeId), "billboards"))
     ).docs.map((doc) => doc.data()) as Billboards[];
 
+    await redisClient.set(cacheKey, JSON.stringify(billboardsData), {
+      EX: 60 * 60, // Cache expires in 1 hour
+    });
+
     return NextResponse.json(billboardsData, { status: 200 });
   } catch (error) {
-    console.log(`STORES_GET: ${error}`);
+    console.log(`BILLBOARDS_GET: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });

@@ -1,15 +1,16 @@
 import {
   doc,
-  getDocs,
   addDoc,
   collection,
-  query,
   serverTimestamp,
   updateDoc,
+  getDocs,
   where,
+  query,
 } from "firebase/firestore";
 
 import { NextResponse, NextRequest } from "next/server";
+import redisClient from "@/lib/services/redis";
 import { db } from "@/lib/services/firebase";
 import { auth } from "@clerk/nextjs/server";
 import { Store } from "@/lib/helpers/types";
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json("Unauthorized", { status: 401 });
     }
     // throw error if no store name
-    if (!body) {
+    if (!body || !body.name) {
       return NextResponse.json("Store name is missing", { status: 400 });
     }
     // assign data
@@ -47,6 +48,9 @@ export async function POST(request: NextRequest) {
       updatedAt: serverTimestamp(),
     });
 
+    const cacheKey = `stores_${userId}`;
+    await redisClient.del(cacheKey);
+
     return NextResponse.json({ id, ...storeData }, { status: 200 });
   } catch (error) {
     console.log(`Stores_POST: ${error}`);
@@ -57,32 +61,39 @@ export async function POST(request: NextRequest) {
 }
 
 // get all stores handler
-export async function GET() {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { storeId: string } },
+) {
   try {
     // get user
     const { userId } = auth();
-
     // throw error if no user
     if (!userId) {
       return NextResponse.json("Unauthorized", { status: 401 });
     }
+    const cacheKey = `store_${userId}_${params.storeId}`;
+    const cachedStores = await redisClient.get(cacheKey);
 
-    // Initialize store
-    let store = null as any;
+    if (cachedStores) {
+      return NextResponse.json(JSON.parse(cachedStores), { status: 200 });
+    }
 
-    // Get all stores for the userId
     const storeSnap = await getDocs(
       query(collection(db, "stores"), where("userId", "==", userId)),
     );
 
-    // Store the first snapshot found
+    const stores: Store[] = [];
+
     storeSnap.forEach((doc) => {
-      store = doc.data() as Store;
-      return; // Exit the loop after the first store is found
+      stores.push(doc.data() as Store);
     });
 
-    if (store) {
-      return NextResponse.json({ storeId: store.id }, { status: 200 });
+    if (stores) {
+      await redisClient.set(cacheKey, JSON.stringify(stores), {
+        EX: 60 * 60, // Cache expires in 1 hour
+      });
+      return NextResponse.json(stores, { status: 200 });
     } else {
       return NextResponse.json("Store not found", { status: 404 });
     }

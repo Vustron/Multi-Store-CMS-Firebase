@@ -2,6 +2,7 @@
 
 import { useGetBillboards } from "@/lib/hooks/api/billboard/useGetBillboard";
 import CreateCategoryForm from "@/components/forms/CreateCategoryForm";
+import { useEffect } from "react";
 
 export default function CategoryPage({
   params,
@@ -10,6 +11,10 @@ export default function CategoryPage({
 }) {
   // get billboard
   const billboard = useGetBillboards({ params });
+  // Refetch data when component mounts
+  useEffect(() => {
+    billboard.refetch();
+  }, [billboard.refetch]);
   // set data
   const data = billboard.data || [];
   // init loading state

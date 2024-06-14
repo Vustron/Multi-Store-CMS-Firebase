@@ -4,10 +4,15 @@ import {
   updateDoc,
   getDoc,
   deleteDoc,
+  getDocs,
+  query,
+  collection,
+  where,
 } from "firebase/firestore";
 
 import { NextResponse, NextRequest } from "next/server";
-import { Billboards, Category } from "@/lib/helpers/types";
+import redisClient from "@/lib/services/redis";
+import { Category } from "@/lib/helpers/types";
 import { db } from "@/lib/services/firebase";
 import { auth } from "@clerk/nextjs/server";
 
@@ -26,7 +31,7 @@ export async function PATCH(
       return NextResponse.json("Unauthorized", { status: 401 });
     }
     // throw error if no data
-    if (!body) {
+    if (!body || !body.name || !body.billboardLabel || !body.billboardId) {
       return NextResponse.json(
         "Category Name or Billboard name or Billboard ID is missing",
         {
@@ -43,7 +48,7 @@ export async function PATCH(
 
     // throw error if no category id
     if (!params.categoryId) {
-      return NextResponse.json("Billboard ID is missing", {
+      return NextResponse.json("Category ID is missing", {
         status: 400,
       });
     }
@@ -84,6 +89,10 @@ export async function PATCH(
         doc(db, "stores", params.storeId, "categories", params.categoryId),
       )
     ).data() as Category;
+
+    // Invalidate the Redis cache
+    const cacheKey = `categories_${params.storeId}`;
+    await redisClient.del(cacheKey);
 
     return NextResponse.json(category, { status: 200 });
   } catch (error) {
@@ -135,11 +144,15 @@ export async function DELETE(
       db,
       "stores",
       params.storeId,
-      "billboards",
+      "categories",
       params.categoryId,
     );
 
     await deleteDoc(categoryRef);
+
+    // Invalidate the Redis cache
+    const cacheKey = `categories_${params.storeId}`;
+    await redisClient.del(cacheKey);
 
     return NextResponse.json("Category deleted", { status: 200 });
   } catch (error) {
