@@ -7,6 +7,7 @@ import {
   getDocs,
   where,
   query,
+  getDoc,
 } from "firebase/firestore";
 
 import { NextResponse, NextRequest } from "next/server";
@@ -66,28 +67,22 @@ export async function GET(
   { params }: { params: { storeId: string } },
 ) {
   try {
-    // get user
-    const { userId } = auth();
-    // throw error if no user
-    if (!userId) {
-      return NextResponse.json("Unauthorized", { status: 401 });
-    }
-    const cacheKey = `store_${userId}_${params.storeId}`;
+    // // get user
+    // const { userId } = auth();
+    // // throw error if no user
+    // if (!userId) {
+    //   return NextResponse.json("Unauthorized", { status: 401 });
+    // }
+    const cacheKey = `store_${params.storeId}`;
     const cachedStores = await redisClient.get(cacheKey);
 
     if (cachedStores) {
       return NextResponse.json(JSON.parse(cachedStores), { status: 200 });
     }
-
-    const storeSnap = await getDocs(
-      query(collection(db, "stores"), where("userId", "==", userId)),
-    );
-
-    const stores: Store[] = [];
-
-    storeSnap.forEach((doc) => {
-      stores.push(doc.data() as Store);
-    });
+    // get store
+    const stores = (
+      await getDoc(doc(db, "stores", params.storeId))
+    ).data() as Store;
 
     if (stores) {
       await redisClient.set(cacheKey, JSON.stringify(stores), {

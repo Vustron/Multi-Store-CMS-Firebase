@@ -102,33 +102,27 @@ export async function GET(
   { params }: { params: { storeId: string } },
 ) {
   try {
-    // get user
-    const { userId } = auth();
-    // throw error if no user
-    if (!userId) {
-      return NextResponse.json("Unauthorized", { status: 401 });
-    }
+    // // get user
+    // const { userId } = auth();
+    // // throw error if no user
+    // if (!userId) {
+    //   return NextResponse.json("Unauthorized", { status: 401 });
+    // }
     // if there's no userId throw an error
     if (!params.storeId) {
       return NextResponse.json("Store ID is missing", { status: 400 });
     }
 
-    const cacheKey = `store_${userId}_${params.storeId}`;
+    const cacheKey = `store_${params.storeId}`;
     const cachedStore = await redisClient.get(cacheKey);
 
     if (cachedStore) {
       return NextResponse.json(JSON.parse(cachedStore), { status: 200 });
     }
-
-    const storeSnap = await getDocs(
-      query(collection(db, "stores"), where("userId", "==", userId)),
-    );
-
-    const stores: Store[] = [];
-
-    storeSnap.forEach((doc) => {
-      stores.push(doc.data() as Store);
-    });
+    // get store
+    const stores = (
+      await getDoc(doc(db, "stores", params.storeId))
+    ).data() as Store;
 
     if (stores) {
       await redisClient.set(cacheKey, JSON.stringify(stores), {
@@ -139,7 +133,7 @@ export async function GET(
       return NextResponse.json("Store not found", { status: 404 });
     }
   } catch (error) {
-    console.log(`STORES_GET: ${error}`);
+    console.log(`STORE_GET: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });

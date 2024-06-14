@@ -53,9 +53,9 @@ const UpdateCategoryForm = ({
   billboards,
   categoryId,
 }: Props) => {
-  // init create store hook
+  // init update category hook
   const mutation = useUpdateCategory(storeId, categoryId);
-  // init delete store hook
+  // init delete category hook
   const deleteMutation = useDeleteCategory(storeId, categoryId);
   // confirm modal hook
   const [ConfirmDialog, confirm] = useConfirm(

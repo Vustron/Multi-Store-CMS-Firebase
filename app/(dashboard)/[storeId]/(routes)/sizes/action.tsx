@@ -9,19 +9,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/DropdownMenu";
 
-import { useDeleteCategory } from "@/lib/hooks/api/categories/useDeleteCategory";
+import { useDeleteSize } from "@/lib/hooks/api/sizes/useDeleteSize";
 import { Copy, MoreHorizontal, Trash, Pencil } from "lucide-react";
 import { useConfirm } from "@/lib/hooks/misc/useConfirm";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { CategoryColumns } from "./columns";
+import { SizeColumns } from "./columns";
 import { toast } from "react-hot-toast";
 
 interface Props {
-  data: CategoryColumns;
+  data: SizeColumns;
 }
 
-const CategoryActions = ({ data }: Props) => {
+const SizeActions = ({ data }: Props) => {
   // init router
   const router = useRouter();
   // init params
@@ -31,11 +31,11 @@ const CategoryActions = ({ data }: Props) => {
     ? params.storeId[0]
     : params.storeId;
   // init delete store hook
-  const deleteMutation = useDeleteCategory(storeId, data.id);
+  const deleteMutation = useDeleteSize(storeId, data.id);
   // confirm modal hook
   const [ConfirmDialog, confirm] = useConfirm(
     "Are you sure?",
-    "You are about to delete this category",
+    "You are about to delete this size",
   );
 
   const handleDelete = async () => {
@@ -43,8 +43,8 @@ const CategoryActions = ({ data }: Props) => {
 
     if (ok) {
       await toast.promise(deleteMutation.mutateAsync(), {
-        loading: <span className="animate-pulse">Deleting Category...</span>,
-        success: "Category deleted",
+        loading: <span className="animate-pulse">Deleting Size...</span>,
+        success: "Size deleted",
         error: "Something went wrong",
       });
     }
@@ -52,7 +52,7 @@ const CategoryActions = ({ data }: Props) => {
 
   const onCopy = (id: string) => {
     navigator.clipboard.writeText(id);
-    toast.success("Category ID copied");
+    toast.success("Size ID copied");
   };
 
   return (
@@ -76,9 +76,7 @@ const CategoryActions = ({ data }: Props) => {
           </DropdownMenuItem>
           {/* edit */}
           <DropdownMenuItem
-            onClick={() =>
-              router.push(`/${params.storeId}/categories/${data.id}`)
-            }
+            onClick={() => router.push(`/${params.storeId}/sizes/${data.id}`)}
           >
             <Pencil className="mr-2 size-4" />
             Edit
@@ -94,4 +92,4 @@ const CategoryActions = ({ data }: Props) => {
   );
 };
 
-export default CategoryActions;
+export default SizeActions;
