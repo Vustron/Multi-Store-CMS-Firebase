@@ -8,10 +8,10 @@ import {
 } from "firebase/firestore";
 
 import { NextResponse, NextRequest } from "next/server";
-import redisClient from "@/lib/services/redis";
 import { db } from "@/lib/services/firebase";
 import { auth } from "@clerk/nextjs/server";
 import { Store } from "@/lib/helpers/types";
+import redis from "@/lib/services/redis";
 
 // create new store handler
 export async function POST(request: NextRequest) {
@@ -40,14 +40,17 @@ export async function POST(request: NextRequest) {
     // get reference id
     const id = storeRef.id;
 
+    // update newly created store data
     await updateDoc(doc(db, "stores", id), {
       ...storeData,
       id,
       updatedAt: serverTimestamp(),
     });
 
-    const cacheKey = `stores_${userId}`;
-    await redisClient.del(cacheKey);
+    // update redis cache
+    const cacheKey = `stores_${id}`;
+    await redis.del(cacheKey);
+    await redis.set(`stores_${id}`, JSON.stringify({ id, ...storeData }));
 
     return NextResponse.json({ id, ...storeData }, { status: 200 });
   } catch (error) {
@@ -64,30 +67,29 @@ export async function GET(
   { params }: { params: { storeId: string } },
 ) {
   try {
-    // // get user
-    // const { userId } = auth();
-    // // throw error if no user
-    // if (!userId) {
-    //   return NextResponse.json("Unauthorized", { status: 401 });
-    // }
-    const cacheKey = `store_${params.storeId}`;
-    const cachedStores = await redisClient.get(cacheKey);
+    // if there's no userId throw an error
+    if (!params.storeId) {
+      return NextResponse.json("Store ID is missing", { status: 400 });
+    }
+    // get redis cache
+    const cacheKey = `stores_${params.storeId}`;
+    const cachedStores = await redis.get(cacheKey);
 
     if (cachedStores) {
       return NextResponse.json(JSON.parse(cachedStores), { status: 200 });
     }
-    // get store
+
+    // get store if no redis cache
     const stores = (
       await getDoc(doc(db, "stores", params.storeId))
     ).data() as Store;
 
     if (stores) {
-      await redisClient.set(cacheKey, JSON.stringify(stores), {
-        EX: 60 * 60, // Cache expires in 1 hour
-      });
+      // set the new stores data into redis cache
+      await redis.set(cacheKey, JSON.stringify(stores));
       return NextResponse.json(stores, { status: 200 });
     } else {
-      return NextResponse.json("Store not found", { status: 404 });
+      return NextResponse.json("Stores not found", { status: 404 });
     }
   } catch (error) {
     console.log(`STORES_GET: ${error}`);

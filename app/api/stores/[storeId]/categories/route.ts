@@ -9,10 +9,10 @@ import {
 } from "firebase/firestore";
 
 import { NextResponse, NextRequest } from "next/server";
-import redisClient from "@/lib/services/redis";
 import { Category } from "@/lib/helpers/types";
 import { db } from "@/lib/services/firebase";
 import { auth } from "@clerk/nextjs/server";
+import redis from "@/lib/services/redis";
 
 // create new category handler
 export async function POST(
@@ -45,6 +45,12 @@ export async function POST(
     }
     // assign data
     const { name, billboardLabel, billboardId } = body;
+    const categoryData = {
+      name,
+      billboardLabel,
+      billboardId,
+      createdAt: serverTimestamp(),
+    };
 
     const store = await getDoc(doc(db, "stores", params.storeId));
 
@@ -56,29 +62,27 @@ export async function POST(
       }
     }
 
-    const categoryData = {
-      name,
-      billboardLabel,
-      billboardId,
-      createdAt: serverTimestamp(),
-    };
-
+    // get category ref from store
     const categoryRef = await addDoc(
       collection(db, "stores", params.storeId, "categories"),
       categoryData,
     );
-
+    // get id
     const id = categoryRef.id;
-
+    // update the newly created data
     await updateDoc(doc(db, "stores", params.storeId, "categories", id), {
       ...categoryData,
       id,
       updatedAt: serverTimestamp(),
     });
 
-    // Invalidate the Redis cache
+    // update redis cache
     const cacheKey = `categories_${params.storeId}`;
-    await redisClient.del(cacheKey);
+    await redis.del(cacheKey);
+    await redis.set(
+      `categories_${params.storeId}`,
+      JSON.stringify({ id, ...categoryData }),
+    );
 
     return NextResponse.json({ id, ...categoryData }, { status: 200 });
   } catch (error) {
@@ -89,7 +93,7 @@ export async function POST(
   }
 }
 
-// get categories by id handler
+// get all categories handler
 export async function GET(
   request: NextRequest,
   { params }: { params: { storeId: string } },
@@ -99,22 +103,20 @@ export async function GET(
     if (!params.storeId) {
       return NextResponse.json("Store ID is missing", { status: 400 });
     }
-
-    const cacheKey = `store_${params.storeId}`;
-    const cachedStore = await redisClient.get(cacheKey);
+    // get redis cache
+    const cacheKey = `categories_${params.storeId}`;
+    const cachedStore = await redis.get(cacheKey);
 
     if (cachedStore) {
       return NextResponse.json(JSON.parse(cachedStore), { status: 200 });
     }
-
+    // get categories if no redis cache
     const categories = (
       await getDocs(collection(doc(db, "stores", params.storeId), "categories"))
     ).docs.map((doc) => doc.data()) as Category[];
 
     if (categories) {
-      await redisClient.set(cacheKey, JSON.stringify(categories), {
-        EX: 60 * 60, // Cache expires in 1 hour
-      });
+      await redis.set(cacheKey, JSON.stringify(categories));
       return NextResponse.json(categories, { status: 200 });
     } else {
       return NextResponse.json("Categories not found", { status: 404 });

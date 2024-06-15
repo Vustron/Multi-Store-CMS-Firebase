@@ -4,17 +4,13 @@ import {
   updateDoc,
   getDoc,
   deleteDoc,
-  getDocs,
-  query,
-  collection,
-  where,
 } from "firebase/firestore";
 
 import { NextResponse, NextRequest } from "next/server";
-import redisClient from "@/lib/services/redis";
 import { Category } from "@/lib/helpers/types";
 import { db } from "@/lib/services/firebase";
 import { auth } from "@clerk/nextjs/server";
+import redis from "@/lib/services/redis";
 
 // patch category handler
 export async function PATCH(
@@ -92,7 +88,8 @@ export async function PATCH(
 
     // Invalidate the Redis cache
     const cacheKey = `categories_${params.storeId}`;
-    await redisClient.del(cacheKey);
+    await redis.del(cacheKey);
+    await redis.set(`categories_${params.storeId}`, JSON.stringify(category));
 
     return NextResponse.json(category, { status: 200 });
   } catch (error) {
@@ -152,7 +149,7 @@ export async function DELETE(
 
     // Invalidate the Redis cache
     const cacheKey = `categories_${params.storeId}`;
-    await redisClient.del(cacheKey);
+    await redis.del(cacheKey);
 
     return NextResponse.json("Category deleted", { status: 200 });
   } catch (error) {

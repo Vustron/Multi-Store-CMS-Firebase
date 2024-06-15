@@ -1,18 +1,9 @@
-import {
-  getDocs,
-  collection,
-  query,
-  where,
-  doc,
-  updateDoc,
-  getDoc,
-  deleteDoc,
-} from "firebase/firestore";
+import { doc, updateDoc, getDoc, deleteDoc } from "firebase/firestore";
 import { NextResponse, NextRequest } from "next/server";
-import redisClient from "@/lib/services/redis";
 import { db } from "@/lib/services/firebase";
 import { auth } from "@clerk/nextjs/server";
 import { Store } from "@/lib/helpers/types";
+import redis from "@/lib/services/redis";
 
 // update store handler
 export async function PATCH(
@@ -43,13 +34,14 @@ export async function PATCH(
     await updateDoc(docRef, { name });
     const store = (await getDoc(docRef)).data() as Store;
 
-    // Invalidate the Redis cache
-    const cacheKey = `store_${userId}_${params.storeId}`;
-    await redisClient.del(cacheKey);
+    // update redis cache
+    const cacheKey = `stores_${params.storeId}`;
+    await redis.del(cacheKey);
+    await redis.set(`stores_${params.storeId}`, JSON.stringify(store));
 
     return NextResponse.json(store, { status: 200 });
   } catch (error) {
-    console.log(`Stores_PATCH: ${error}`);
+    console.log(`STORES_PATCH: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });
@@ -82,14 +74,14 @@ export async function DELETE(
     await deleteDoc(docRef);
 
     // Invalidate the Redis cache
-    const cacheKey = `store_${userId}_${params.storeId}`;
-    await redisClient.del(cacheKey);
+    const cacheKey = `stores_${params.storeId}`;
+    await redis.del(cacheKey);
 
     return NextResponse.json("Store and sub-collections deleted", {
       status: 200,
     });
   } catch (error) {
-    console.log(`STORES_PATCH: ${error}`);
+    console.log(`STORES_DELETE: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });
@@ -102,38 +94,33 @@ export async function GET(
   { params }: { params: { storeId: string } },
 ) {
   try {
-    // // get user
-    // const { userId } = auth();
-    // // throw error if no user
-    // if (!userId) {
-    //   return NextResponse.json("Unauthorized", { status: 401 });
-    // }
     // if there's no userId throw an error
     if (!params.storeId) {
       return NextResponse.json("Store ID is missing", { status: 400 });
     }
 
-    const cacheKey = `store_${params.storeId}`;
-    const cachedStore = await redisClient.get(cacheKey);
+    // get redis cache
+    const cacheKey = `stores_${params.storeId}`;
+    const cachedStore = await redis.get(cacheKey);
 
     if (cachedStore) {
       return NextResponse.json(JSON.parse(cachedStore), { status: 200 });
     }
-    // get store
+
+    // get store if no redis cache
     const stores = (
       await getDoc(doc(db, "stores", params.storeId))
     ).data() as Store;
 
     if (stores) {
-      await redisClient.set(cacheKey, JSON.stringify(stores), {
-        EX: 60 * 60, // Cache expires in 1 hour
-      });
+      // set the new stores data into redis cache
+      await redis.set(cacheKey, JSON.stringify(stores));
       return NextResponse.json(stores, { status: 200 });
     } else {
       return NextResponse.json("Store not found", { status: 404 });
     }
   } catch (error) {
-    console.log(`STORE_GET: ${error}`);
+    console.log(`STORE_ID_GET: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });

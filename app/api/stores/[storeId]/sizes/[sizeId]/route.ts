@@ -4,19 +4,15 @@ import {
   updateDoc,
   getDoc,
   deleteDoc,
-  getDocs,
-  query,
-  collection,
-  where,
 } from "firebase/firestore";
 
 import { NextResponse, NextRequest } from "next/server";
-import redisClient from "@/lib/services/redis";
-import { Category } from "@/lib/helpers/types";
 import { db } from "@/lib/services/firebase";
 import { auth } from "@clerk/nextjs/server";
+import { Size } from "@/lib/helpers/types";
+import redis from "@/lib/services/redis";
 
-// patch category handler
+// patch size handler
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { storeId: string; sizeId: string } },
@@ -43,7 +39,7 @@ export async function PATCH(
       });
     }
 
-    // throw error if no category id
+    // throw error if no size id
     if (!params.sizeId) {
       return NextResponse.json("Size ID is missing", {
         status: 400,
@@ -61,11 +57,11 @@ export async function PATCH(
         return NextResponse.json("Unauthorized access", { status: 500 });
       }
     }
-
+    // add data to firestore and retrieve reference id
     const sizeRef = await getDoc(
       doc(db, "stores", params.storeId, "sizes", params.sizeId),
     );
-
+    // update the size data if exists
     if (sizeRef.exists()) {
       await updateDoc(
         doc(db, "stores", params.storeId, "sizes", params.sizeId),
@@ -80,13 +76,15 @@ export async function PATCH(
       return NextResponse.json("Size not found", { status: 404 });
     }
 
+    // get the newly updated data
     const size = (
       await getDoc(doc(db, "stores", params.storeId, "sizes", params.sizeId))
-    ).data() as Category;
+    ).data() as Size;
 
     // Invalidate the Redis cache
     const cacheKey = `sizes_${params.storeId}`;
-    await redisClient.del(cacheKey);
+    await redis.del(cacheKey);
+    await redis.set(`sizes_${params.storeId}`, JSON.stringify(size));
 
     return NextResponse.json(size, { status: 200 });
   } catch (error) {
@@ -97,7 +95,7 @@ export async function PATCH(
   }
 }
 
-// delete billboard handler
+// delete size handler
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { storeId: string; sizeId: string } },
@@ -124,6 +122,7 @@ export async function DELETE(
       });
     }
 
+    // get store
     const store = await getDoc(doc(db, "stores", params.storeId));
 
     if (store.exists()) {
@@ -134,13 +133,15 @@ export async function DELETE(
       }
     }
 
+    // get size ref from store
     const sizeRef = doc(db, "stores", params.storeId, "sizes", params.sizeId);
 
+    // delete if found
     await deleteDoc(sizeRef);
 
     // Invalidate the Redis cache
     const cacheKey = `sizes_${params.storeId}`;
-    await redisClient.del(cacheKey);
+    await redis.del(cacheKey);
 
     return NextResponse.json("Size deleted", { status: 200 });
   } catch (error) {

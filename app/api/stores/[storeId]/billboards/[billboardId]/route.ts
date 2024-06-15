@@ -5,11 +5,12 @@ import {
   getDoc,
   deleteDoc,
 } from "firebase/firestore";
+
 import { NextResponse, NextRequest } from "next/server";
 import { Billboards } from "@/lib/helpers/types";
-import redisClient from "@/lib/services/redis";
 import { db } from "@/lib/services/firebase";
 import { auth } from "@clerk/nextjs/server";
+import redis from "@/lib/services/redis";
 
 // patch billboard handler
 export async function PATCH(
@@ -81,8 +82,9 @@ export async function PATCH(
     ).data() as Billboards;
 
     // Invalidate the Redis cache
-    const cacheKey = `billboard_${params.storeId}_${params.billboardId}`;
-    await redisClient.del(cacheKey);
+    const cacheKey = `billboards_${params.storeId}`;
+    await redis.del(cacheKey);
+    await redis.set(`billboards_${params.storeId}`, JSON.stringify(billboard));
 
     return NextResponse.json(billboard, { status: 200 });
   } catch (error) {
@@ -139,8 +141,8 @@ export async function DELETE(
     );
 
     // Invalidate the Redis cache
-    const cacheKey = `billboard_${params.storeId}_${params.billboardId}`;
-    await redisClient.del(cacheKey);
+    const cacheKey = `billboards_${params.storeId}`;
+    await redis.del(cacheKey);
 
     await deleteDoc(billboardRef);
 
