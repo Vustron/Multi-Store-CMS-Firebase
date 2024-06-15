@@ -9,12 +9,12 @@ import {
 } from "firebase/firestore";
 
 import { NextResponse, NextRequest } from "next/server";
+import { Cuisine } from "@/lib/helpers/types";
 import { db } from "@/lib/services/firebase";
 import { auth } from "@clerk/nextjs/server";
-import { Size } from "@/lib/helpers/types";
 import redis from "@/lib/services/redis";
 
-// create new size handler
+// create new cuisine handler
 export async function POST(
   request: NextRequest,
   { params }: { params: { storeId: string } },
@@ -30,7 +30,7 @@ export async function POST(
     }
     // throw error if no data
     if (!body || !body.name || !body.value) {
-      return NextResponse.json("Size name or Size value is missing", {
+      return NextResponse.json("Cuisine name or Cuisine value is missing", {
         status: 400,
       });
     }
@@ -42,7 +42,7 @@ export async function POST(
     }
     // assign data
     const { name, value } = body;
-    const sizeData = {
+    const cuisineData = {
       name,
       value,
       createdAt: serverTimestamp(),
@@ -60,46 +60,46 @@ export async function POST(
     }
 
     // add data to firestore and retrieve reference id
-    const sizeRef = await addDoc(
-      collection(db, "stores", params.storeId, "sizes"),
-      sizeData,
+    const cuisineRef = await addDoc(
+      collection(db, "stores", params.storeId, "cuisines"),
+      cuisineData,
     );
     // get reference id
-    const id = sizeRef.id;
+    const id = cuisineRef.id;
     // update newly created store data
-    await updateDoc(doc(db, "stores", params.storeId, "sizes", id), {
-      ...sizeData,
+    await updateDoc(doc(db, "stores", params.storeId, "cuisines", id), {
+      ...cuisineData,
       id,
       updatedAt: serverTimestamp(),
     });
 
     // Fetch the updated document to get the actual timestamp
-    const updatedSize = await getDoc(
-      doc(db, "stores", params.storeId, "sizes", id),
+    const updatedCuisine = await getDoc(
+      doc(db, "stores", params.storeId, "cuisines", id),
     );
-    const size = updatedSize.data() as Size;
+    const cuisine = updatedCuisine.data() as Cuisine;
 
     // Invalidate the Redis cache
-    const cacheKey = `sizes_${params.storeId}`;
-    const cachedSizes = await redis.get(cacheKey);
-    const sizes = cachedSizes ? JSON.parse(cachedSizes) : [];
+    const cacheKey = `cuisines_${params.storeId}`;
+    const cachedCuisines = await redis.get(cacheKey);
+    const cuisines = cachedCuisines ? JSON.parse(cachedCuisines) : [];
 
-    // Append the new size to the cached sizes list
-    sizes.push(size);
+    // Append the new cuisine to the cached cuisines list
+    cuisines.push(cuisine);
 
-    // Save the updated sizes list back to Redis
-    await redis.set(cacheKey, JSON.stringify(sizes), "EX", 3600);
+    // Save the updated cuisines list back to Redis
+    await redis.set(cacheKey, JSON.stringify(cuisines), "EX", 3600);
 
-    return NextResponse.json(size, { status: 200 });
+    return NextResponse.json(cuisine, { status: 200 });
   } catch (error) {
-    console.log(`SIZES_POST: ${error}`);
+    console.log(`CUISINES_POST: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });
   }
 }
 
-// get size handler
+// get cuisine handler
 export async function GET(
   request: NextRequest,
   { params }: { params: { storeId: string } },
@@ -110,25 +110,25 @@ export async function GET(
       return NextResponse.json("Store ID is missing", { status: 400 });
     }
     // get redis cache
-    const cacheKey = `sizes_${params.storeId}`;
-    const cachedSize = await redis.get(cacheKey);
+    const cacheKey = `cuisines_${params.storeId}`;
+    const cachedCuisine = await redis.get(cacheKey);
 
-    if (cachedSize) {
-      return NextResponse.json(JSON.parse(cachedSize), { status: 200 });
+    if (cachedCuisine) {
+      return NextResponse.json(JSON.parse(cachedCuisine), { status: 200 });
     }
-    // get sizes if no redis cache
-    const sizes = (
-      await getDocs(collection(doc(db, "stores", params.storeId), "sizes"))
-    ).docs.map((doc) => doc.data()) as Size[];
+    // get cuisines if no redis cache
+    const cuisines = (
+      await getDocs(collection(doc(db, "stores", params.storeId), "cuisines"))
+    ).docs.map((doc) => doc.data()) as Cuisine[];
 
-    if (sizes) {
-      await redis.set(cacheKey, JSON.stringify(sizes));
-      return NextResponse.json(sizes, { status: 200 });
+    if (cuisines) {
+      await redis.set(cacheKey, JSON.stringify(cuisines));
+      return NextResponse.json(cuisines, { status: 200 });
     } else {
-      return NextResponse.json("Sizes not found", { status: 404 });
+      return NextResponse.json("Cuisines not found", { status: 404 });
     }
   } catch (error) {
-    console.log(`SIZES_GET: ${error}`);
+    console.log(`CUISINES_GET: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });

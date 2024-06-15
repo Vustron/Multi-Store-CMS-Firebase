@@ -19,7 +19,7 @@ import {
 
 import { useDeleteCategory } from "@/lib/hooks/api/categories/useDeleteCategory";
 import { useUpdateCategory } from "@/lib/hooks/api/categories/useUpdateCategory";
-import { Billboards, Category } from "@/lib/helpers/types";
+import { Billboard, Category } from "@/lib/helpers/types";
 import { useConfirm } from "@/lib/hooks/misc/useConfirm";
 import { Separator } from "@/components/ui/Separator";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,7 +35,7 @@ import { z } from "zod";
 interface Props {
   initialData: Category | undefined;
   storeId?: string;
-  billboards: Billboards[];
+  billboards: Billboard[];
   categoryId?: string;
 }
 

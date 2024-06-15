@@ -73,18 +73,24 @@ export async function POST(
       updatedAt: serverTimestamp(),
     });
 
+    // Fetch the updated document to get the actual timestamp
+    const updatedKitchen = await getDoc(
+      doc(db, "stores", params.storeId, "kitchens", id),
+    );
+    const kitchen = updatedKitchen.data() as Kitchen;
+
     // Invalidate the Redis cache
     const cacheKey = `kitchens_${params.storeId}`;
     const cachedKitchens = await redis.get(cacheKey);
     const kitchens = cachedKitchens ? JSON.parse(cachedKitchens) : [];
 
-    // Append the new kitchen to the cached sizes list
-    kitchens.push({ id, ...kitchenData });
+    // Append the new kitchen to the cached kitchens list
+    kitchens.push(kitchen);
 
-    // Save the updated stores list back to Redis
-    await redis.set(cacheKey, JSON.stringify(kitchens));
+    // Save the updated kitchens list back to Redis
+    await redis.set(cacheKey, JSON.stringify(kitchens), "EX", 3600);
 
-    return NextResponse.json({ id, ...kitchenData }, { status: 200 });
+    return NextResponse.json(kitchen, { status: 200 });
   } catch (error) {
     console.log(`KITCHENS_POST: ${error}`);
     return NextResponse.json("Internal Server Error", {

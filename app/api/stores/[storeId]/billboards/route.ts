@@ -9,7 +9,7 @@ import {
 } from "firebase/firestore";
 
 import { NextResponse, NextRequest } from "next/server";
-import { Billboards } from "@/lib/helpers/types";
+import { Billboard } from "@/lib/helpers/types";
 import { db } from "@/lib/services/firebase";
 import { auth } from "@clerk/nextjs/server";
 import redis from "@/lib/services/redis";
@@ -72,18 +72,24 @@ export async function POST(
       updatedAt: serverTimestamp(),
     });
 
+    // Fetch the updated document to get the actual timestamp
+    const updatedBillboard = await getDoc(
+      doc(db, "stores", params.storeId, "billboards", id),
+    );
+    const billboard = updatedBillboard.data() as Billboard;
+
     // Invalidate the Redis cache
     const cacheKey = `billboards_${params.storeId}`;
     const cachedBillboards = await redis.get(cacheKey);
     const billboards = cachedBillboards ? JSON.parse(cachedBillboards) : [];
 
     // Append the new billboard to the cached billboards list
-    billboards.push({ id, ...billboardData });
+    billboards.push(billboard);
 
     // Save the updated billboards list back to Redis
-    await redis.set(cacheKey, JSON.stringify(billboards));
+    await redis.set(cacheKey, JSON.stringify(billboards), "EX", 3600);
 
-    return NextResponse.json({ id, ...billboardData }, { status: 200 });
+    return NextResponse.json(billboard, { status: 200 });
   } catch (error) {
     console.log(`BILLBOARDS_POST: ${error}`);
     return NextResponse.json("Internal Server Error", {
@@ -114,7 +120,7 @@ export async function GET(
 
     const billboards = (
       await getDocs(collection(doc(db, "stores", params.storeId), "billboards"))
-    ).docs.map((doc) => doc.data()) as Billboards[];
+    ).docs.map((doc) => doc.data()) as Billboard[];
 
     if (billboards) {
       await redis.set(cacheKey, JSON.stringify(billboards));

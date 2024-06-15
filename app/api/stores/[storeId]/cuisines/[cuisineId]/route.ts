@@ -7,15 +7,15 @@ import {
 } from "firebase/firestore";
 
 import { NextResponse, NextRequest } from "next/server";
+import { Cuisine } from "@/lib/helpers/types";
 import { db } from "@/lib/services/firebase";
 import { auth } from "@clerk/nextjs/server";
-import { Size } from "@/lib/helpers/types";
 import redis from "@/lib/services/redis";
 
-// patch size handler
+// patch cuisine handler
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { storeId: string; sizeId: string } },
+  { params }: { params: { storeId: string; cuisineId: string } },
 ) {
   try {
     // get user
@@ -28,7 +28,7 @@ export async function PATCH(
     }
     // throw error if no data
     if (!body || !body.name || !body.value) {
-      return NextResponse.json("Size name or Size value is missing", {
+      return NextResponse.json("Cuisine name or Cuisine value is missing", {
         status: 400,
       });
     }
@@ -38,79 +38,81 @@ export async function PATCH(
         status: 400,
       });
     }
-
-    // throw error if no size id
-    if (!params.sizeId) {
-      return NextResponse.json("Size ID is missing", {
+    // throw error if no cuisine id
+    if (!params.cuisineId) {
+      return NextResponse.json("Cuisine ID is missing", {
         status: 400,
       });
     }
+
     // assign data
     const { name, value } = body;
 
+    // Verify store ownership
     const store = await getDoc(doc(db, "stores", params.storeId));
-
     if (store.exists()) {
-      let storeData = store.data();
-
+      const storeData = store.data();
       if (storeData?.userId !== userId) {
-        return NextResponse.json("Unauthorized access", { status: 500 });
+        return NextResponse.json("Unauthorized access", { status: 403 });
       }
+    } else {
+      return NextResponse.json("Store not found", { status: 404 });
     }
-    // add data to firestore and retrieve reference id
-    const sizeRef = await getDoc(
-      doc(db, "stores", params.storeId, "sizes", params.sizeId),
+
+    // Retrieve the existing cuisine document
+    const cuisineRef = await getDoc(
+      doc(db, "stores", params.storeId, "cuisines", params.cuisineId),
     );
-    // update the size data if exists
-    if (sizeRef.exists()) {
+
+    // Update the cuisine data if it exists
+    if (cuisineRef.exists()) {
       await updateDoc(
-        doc(db, "stores", params.storeId, "sizes", params.sizeId),
+        doc(db, "stores", params.storeId, "cuisines", params.cuisineId),
         {
-          ...sizeRef.data(),
           name,
           value,
           updatedAt: serverTimestamp(),
         },
       );
     } else {
-      return NextResponse.json("Size not found", { status: 404 });
+      return NextResponse.json("Cuisine not found", { status: 404 });
     }
 
     // Fetch the updated document to get the actual timestamp
-    const updatedSizeDoc = await getDoc(
-      doc(db, "stores", params.storeId, "sizes", params.sizeId),
+    const updatedCuisineDoc = await getDoc(
+      doc(db, "stores", params.storeId, "cuisines", params.cuisineId),
     );
-    const updatedSize = updatedSizeDoc.data() as Size;
+    const updatedCuisine = updatedCuisineDoc.data() as Cuisine;
 
     // Update the Redis cache
-    const cacheKey = `sizes_${params.storeId}`;
-    const cachedSizes = await redis.get(cacheKey);
-    const sizes = cachedSizes ? JSON.parse(cachedSizes) : [];
+    const cacheKey = `cuisines_${params.storeId}`;
+    const cachedCuisines = await redis.get(cacheKey);
+    const cuisines = cachedCuisines ? JSON.parse(cachedCuisines) : [];
 
-    // Find and update the specific size in the cached list
-    const index = sizes.findIndex((c: Size) => c.id === params.sizeId);
+    // Find and update the specific cuisine in the cached list
+    const index = cuisines.findIndex((c: Cuisine) => c.id === params.cuisineId);
     if (index !== -1) {
-      sizes[index] = updatedSize;
+      cuisines[index] = updatedCuisine;
     } else {
-      sizes.push(updatedSize); // If size is not in cache, add it
+      cuisines.push(updatedCuisine); // If cuisine is not in cache, add it
     }
 
-    // Save the updated sizes list back to Redis
-    await redis.set(cacheKey, JSON.stringify(sizes), "EX", 3600);
+    // Save the updated cuisines list back to Redis
+    await redis.set(cacheKey, JSON.stringify(cuisines), "EX", 3600);
 
-    return NextResponse.json(updatedSize, { status: 200 });
+    return NextResponse.json(updatedCuisine, { status: 200 });
   } catch (error) {
-    console.log(`SIZE_PATCH: ${error}`);
+    console.log(`CUISINE_PATCH: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });
   }
 }
 
-// delete size handler
+// delete cuisine handler
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { storeId: string; sizeId: string } },
+  { params }: { params: { storeId: string; cuisineId: string } },
 ) {
   try {
     // get user
@@ -128,8 +130,8 @@ export async function DELETE(
       });
     }
     // throw error if no category id
-    if (!params.sizeId) {
-      return NextResponse.json("Size ID is missing", {
+    if (!params.cuisineId) {
+      return NextResponse.json("Cuisine ID is missing", {
         status: 400,
       });
     }
@@ -145,19 +147,25 @@ export async function DELETE(
       }
     }
 
-    // get size ref from store
-    const sizeRef = doc(db, "stores", params.storeId, "sizes", params.sizeId);
+    // get cuisine ref from store
+    const cuisineRef = doc(
+      db,
+      "stores",
+      params.storeId,
+      "cuisines",
+      params.cuisineId,
+    );
 
     // delete if found
-    await deleteDoc(sizeRef);
+    await deleteDoc(cuisineRef);
 
     // Invalidate the Redis cache
-    const cacheKey = `sizes_${params.storeId}`;
+    const cacheKey = `cuisines_${params.storeId}`;
     await redis.del(cacheKey);
 
-    return NextResponse.json("Size deleted", { status: 200 });
+    return NextResponse.json("Cuisine deleted", { status: 200 });
   } catch (error) {
-    console.log(`SIZE_DELETE: ${error}`);
+    console.log(`CUISINE_DELETE: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });

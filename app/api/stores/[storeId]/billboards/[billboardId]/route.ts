@@ -7,7 +7,7 @@ import {
 } from "firebase/firestore";
 
 import { NextResponse, NextRequest } from "next/server";
-import { Billboards } from "@/lib/helpers/types";
+import { Billboard } from "@/lib/helpers/types";
 import { db } from "@/lib/services/firebase";
 import { auth } from "@clerk/nextjs/server";
 import redis from "@/lib/services/redis";
@@ -75,31 +75,31 @@ export async function PATCH(
       return NextResponse.json("Billboard not found", { status: 404 });
     }
 
-    const billboard = (
-      await getDoc(
-        doc(db, "stores", params.storeId, "billboards", params.billboardId),
-      )
-    ).data() as Billboards;
+    // Fetch the updated document to get the actual timestamp
+    const updatedBillboardDoc = await getDoc(
+      doc(db, "stores", params.storeId, "billboards", params.billboardId),
+    );
+    const billboardSize = updatedBillboardDoc.data() as Billboard;
 
-    // Invalidate the Redis cache
+    // Update the Redis cache
     const cacheKey = `billboards_${params.storeId}`;
     const cachedBillboards = await redis.get(cacheKey);
     const billboards = cachedBillboards ? JSON.parse(cachedBillboards) : [];
 
     // Find and update the specific billboard in the cached list
     const index = billboards.findIndex(
-      (s: Billboards) => s.id === params.storeId,
+      (c: Billboard) => c.id === params.billboardId,
     );
     if (index !== -1) {
-      billboards[index] = { ...billboards[index], ...store };
+      billboards[index] = billboardSize;
     } else {
-      billboards.push(store); // If billboard is not in cache, add it
+      billboards.push(billboardSize); // If billboard is not in cache, add it
     }
 
     // Save the updated billboards list back to Redis
-    await redis.set(cacheKey, JSON.stringify(billboards));
+    await redis.set(cacheKey, JSON.stringify(billboards), "EX", 3600);
 
-    return NextResponse.json(billboard, { status: 200 });
+    return NextResponse.json(billboardSize, { status: 200 });
   } catch (error) {
     console.log(`BILLBOARD_POST: ${error}`);
     return NextResponse.json("Internal Server Error", {

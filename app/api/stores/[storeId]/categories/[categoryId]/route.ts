@@ -80,31 +80,31 @@ export async function PATCH(
       return NextResponse.json("Category not found", { status: 404 });
     }
 
-    const category = (
-      await getDoc(
-        doc(db, "stores", params.storeId, "categories", params.categoryId),
-      )
-    ).data() as Category;
+    // Fetch the updated document to get the actual timestamp
+    const updatedCategoryDoc = await getDoc(
+      doc(db, "stores", params.storeId, "categories", params.categoryId),
+    );
+    const categorySize = updatedCategoryDoc.data() as Category;
 
-    // Invalidate the Redis cache
+    // Update the Redis cache
     const cacheKey = `categories_${params.storeId}`;
     const cachedCategories = await redis.get(cacheKey);
     const categories = cachedCategories ? JSON.parse(cachedCategories) : [];
 
     // Find and update the specific category in the cached list
     const index = categories.findIndex(
-      (s: Category) => s.id === params.storeId,
+      (c: Category) => c.id === params.categoryId,
     );
     if (index !== -1) {
-      categories[index] = { ...categories[index], ...store };
+      categories[index] = categorySize;
     } else {
-      categories.push(store); // If category is not in cache, add it
+      categories.push(categorySize); // If category is not in cache, add it
     }
 
     // Save the updated categories list back to Redis
-    await redis.set(cacheKey, JSON.stringify(categories));
+    await redis.set(cacheKey, JSON.stringify(categories), "EX", 3600);
 
-    return NextResponse.json(category, { status: 200 });
+    return NextResponse.json(categorySize, { status: 200 });
   } catch (error) {
     console.log(`CATEGORIES_PATCH: ${error}`);
     return NextResponse.json("Internal Server Error", {
@@ -113,7 +113,7 @@ export async function PATCH(
   }
 }
 
-// delete billboard handler
+// delete category handler
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { storeId: string; categoryId: string } },

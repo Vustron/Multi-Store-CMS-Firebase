@@ -1,4 +1,4 @@
-import { Billboards } from "@/lib/helpers/types";
+import { Billboard } from "@/lib/helpers/types";
 import { useQuery } from "@tanstack/react-query";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/services/firebase";
@@ -8,7 +8,7 @@ const fetchBillboard = async (storeId: string, billboardId: string) => {
   const docSnap = await getDoc(docRef);
 
   if (docSnap.exists()) {
-    return docSnap.data() as Billboards;
+    return docSnap.data() as Billboard;
   } else {
     throw new Error("Billboard not found");
   }

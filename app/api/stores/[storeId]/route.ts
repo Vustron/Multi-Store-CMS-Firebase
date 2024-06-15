@@ -20,7 +20,7 @@ export async function PATCH(
       return NextResponse.json("Unauthorized", { status: 401 });
     }
     // throw error if no store name
-    if (!body) {
+    if (!body || !body.name) {
       return NextResponse.json("Store name is missing", { status: 400 });
     }
     // throw error if no store id
@@ -32,25 +32,28 @@ export async function PATCH(
 
     const docRef = doc(db, "stores", params.storeId);
     await updateDoc(docRef, { name });
-    const store = (await getDoc(docRef)).data() as Store;
 
-    // update redis cache
+    // Fetch the updated document to get the actual timestamp
+    const updatedStoreDoc = await getDoc(doc(db, "stores", params.storeId));
+    const updatedStore = updatedStoreDoc.data() as Store;
+
+    // Update the Redis cache
     const cacheKey = `stores_${params.storeId}`;
     const cachedStores = await redis.get(cacheKey);
     const stores = cachedStores ? JSON.parse(cachedStores) : [];
 
     // Find and update the specific store in the cached list
-    const index = stores.findIndex((s: Store) => s.id === params.storeId);
+    const index = stores.findIndex((c: Store) => c.id === params.storeId);
     if (index !== -1) {
-      stores[index] = { ...stores[index], ...store };
+      stores[index] = updatedStore;
     } else {
-      stores.push(store); // If store is not in cache, add it
+      stores.push(updatedStore); // If store is not in cache, add it
     }
 
     // Save the updated stores list back to Redis
-    await redis.set(cacheKey, JSON.stringify(stores));
+    await redis.set(cacheKey, JSON.stringify(stores), "EX", 3600);
 
-    return NextResponse.json(store, { status: 200 });
+    return NextResponse.json(updatedStore, { status: 200 });
   } catch (error) {
     console.log(`STORES_PATCH: ${error}`);
     return NextResponse.json("Internal Server Error", {

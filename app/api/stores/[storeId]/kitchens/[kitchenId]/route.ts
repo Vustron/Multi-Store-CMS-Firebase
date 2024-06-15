@@ -76,30 +76,29 @@ export async function PATCH(
       return NextResponse.json("Kitchen not found", { status: 404 });
     }
 
-    // get the newly updated data
-    const kitchen = (
-      await getDoc(
-        doc(db, "stores", params.storeId, "kitchens", params.kitchenId),
-      )
-    ).data() as Kitchen;
+    // Fetch the updated document to get the actual timestamp
+    const updatedKitchenDoc = await getDoc(
+      doc(db, "stores", params.storeId, "kitchens", params.kitchenId),
+    );
+    const updatedKitchen = updatedKitchenDoc.data() as Kitchen;
 
-    // Invalidate the Redis cache
+    // Update the Redis cache
     const cacheKey = `kitchens_${params.storeId}`;
     const cachedKitchens = await redis.get(cacheKey);
     const kitchens = cachedKitchens ? JSON.parse(cachedKitchens) : [];
 
     // Find and update the specific kitchen in the cached list
-    const index = kitchens.findIndex((s: Kitchen) => s.id === params.storeId);
+    const index = kitchens.findIndex((c: Kitchen) => c.id === params.kitchenId);
     if (index !== -1) {
-      kitchens[index] = { ...kitchens[index], ...store };
+      kitchens[index] = updatedKitchen;
     } else {
-      kitchens.push(store); // If kitchen is not in cache, add it
+      kitchens.push(updatedKitchen); // If kitchen is not in cache, add it
     }
 
-    // Save the updated kitchens list back to Redis
-    await redis.set(cacheKey, JSON.stringify(kitchens));
+    // Save the updated cuisines list back to Redis
+    await redis.set(cacheKey, JSON.stringify(kitchens), "EX", 3600);
 
-    return NextResponse.json(kitchen, { status: 200 });
+    return NextResponse.json(updatedKitchen, { status: 200 });
   } catch (error) {
     console.log(`KITCHEN_PATCH: ${error}`);
     return NextResponse.json("Internal Server Error", {

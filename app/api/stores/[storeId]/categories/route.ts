@@ -76,18 +76,24 @@ export async function POST(
       updatedAt: serverTimestamp(),
     });
 
+    // Fetch the updated document to get the actual timestamp
+    const updatedCategory = await getDoc(
+      doc(db, "stores", params.storeId, "categories", id),
+    );
+    const category = updatedCategory.data() as Category;
+
     // Invalidate the Redis cache
     const cacheKey = `categories_${params.storeId}`;
     const cachedCategories = await redis.get(cacheKey);
     const categories = cachedCategories ? JSON.parse(cachedCategories) : [];
 
     // Append the new category to the cached categories list
-    categories.push({ id, ...categoryData });
+    categories.push(category);
 
     // Save the updated categories list back to Redis
-    await redis.set(cacheKey, JSON.stringify(categories));
+    await redis.set(cacheKey, JSON.stringify(categories), "EX", 3600);
 
-    return NextResponse.json({ id, ...categoryData }, { status: 200 });
+    return NextResponse.json(category, { status: 200 });
   } catch (error) {
     console.log(`CATEGORIES_POST: ${error}`);
     return NextResponse.json("Internal Server Error", {

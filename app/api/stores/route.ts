@@ -47,20 +47,24 @@ export async function POST(request: NextRequest) {
       updatedAt: serverTimestamp(),
     });
 
-    // update redis cache
+    // Fetch the updated document to get the actual timestamp
+    const updatedStore = await getDoc(doc(db, "stores", id));
+    const store = updatedStore.data() as Store;
+
+    // Invalidate the Redis cache
     const cacheKey = `stores_${id}`;
     const cachedStores = await redis.get(cacheKey);
     const stores = cachedStores ? JSON.parse(cachedStores) : [];
 
     // Append the new store to the cached stores list
-    stores.push({ id, ...storeData });
+    stores.push(store);
 
     // Save the updated stores list back to Redis
-    await redis.set(cacheKey, JSON.stringify(stores));
+    await redis.set(cacheKey, JSON.stringify(stores), "EX", 3600);
 
-    return NextResponse.json({ id, ...storeData }, { status: 200 });
+    return NextResponse.json(store, { status: 200 });
   } catch (error) {
-    console.log(`Stores_POST: ${error}`);
+    console.log(`STORES_POST: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });

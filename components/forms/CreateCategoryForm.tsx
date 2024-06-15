@@ -19,7 +19,7 @@ import {
 
 import { useCreateCategory } from "@/lib/hooks/api/categories/useCreateCategory";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Billboards } from "@/lib/helpers/types";
+import { Billboard } from "@/lib/helpers/types";
 import { Button } from "@/components/ui//Button";
 import { Input } from "@/components/ui/Input";
 import { useForm } from "react-hook-form";
@@ -29,7 +29,7 @@ import { z } from "zod";
 
 interface Props {
   storeId?: string;
-  billboards: Billboards[];
+  billboards: Billboard[];
 }
 
 export const CategoryFormSchema = z.object({
