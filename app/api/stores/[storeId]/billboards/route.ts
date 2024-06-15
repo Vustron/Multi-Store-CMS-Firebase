@@ -74,11 +74,14 @@ export async function POST(
 
     // Invalidate the Redis cache
     const cacheKey = `billboards_${params.storeId}`;
-    await redis.del(cacheKey);
-    await redis.set(
-      `billboards_${params.storeId}`,
-      JSON.stringify({ id, ...billboardData }),
-    );
+    const cachedBillboards = await redis.get(cacheKey);
+    const billboards = cachedBillboards ? JSON.parse(cachedBillboards) : [];
+
+    // Append the new billboard to the cached billboards list
+    billboards.push({ id, ...billboardData });
+
+    // Save the updated billboards list back to Redis
+    await redis.set(cacheKey, JSON.stringify(billboards));
 
     return NextResponse.json({ id, ...billboardData }, { status: 200 });
   } catch (error) {

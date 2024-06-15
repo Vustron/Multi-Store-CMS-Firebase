@@ -83,8 +83,19 @@ export async function PATCH(
 
     // Invalidate the Redis cache
     const cacheKey = `sizes_${params.storeId}`;
-    await redis.del(cacheKey);
-    await redis.set(`sizes_${params.storeId}`, JSON.stringify(size));
+    const cachedSizes = await redis.get(cacheKey);
+    const sizes = cachedSizes ? JSON.parse(cachedSizes) : [];
+
+    // Find and update the specific size in the cached list
+    const index = sizes.findIndex((s: Size) => s.id === params.storeId);
+    if (index !== -1) {
+      sizes[index] = { ...sizes[index], ...store };
+    } else {
+      sizes.push(store); // If size is not in cache, add it
+    }
+
+    // Save the updated sizes list back to Redis
+    await redis.set(cacheKey, JSON.stringify(sizes));
 
     return NextResponse.json(size, { status: 200 });
   } catch (error) {

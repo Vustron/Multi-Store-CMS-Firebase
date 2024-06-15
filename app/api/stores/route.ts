@@ -49,8 +49,14 @@ export async function POST(request: NextRequest) {
 
     // update redis cache
     const cacheKey = `stores_${id}`;
-    await redis.del(cacheKey);
-    await redis.set(`stores_${id}`, JSON.stringify({ id, ...storeData }));
+    const cachedStores = await redis.get(cacheKey);
+    const stores = cachedStores ? JSON.parse(cachedStores) : [];
+
+    // Append the new store to the cached stores list
+    stores.push({ id, ...storeData });
+
+    // Save the updated stores list back to Redis
+    await redis.set(cacheKey, JSON.stringify(stores));
 
     return NextResponse.json({ id, ...storeData }, { status: 200 });
   } catch (error) {

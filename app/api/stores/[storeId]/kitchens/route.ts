@@ -11,10 +11,10 @@ import {
 import { NextResponse, NextRequest } from "next/server";
 import { db } from "@/lib/services/firebase";
 import { auth } from "@clerk/nextjs/server";
-import { Size } from "@/lib/helpers/types";
+import { Kitchen, Size } from "@/lib/helpers/types";
 import redis from "@/lib/services/redis";
 
-// create new size handler
+// create new kitchen handler
 export async function POST(
   request: NextRequest,
   { params }: { params: { storeId: string } },
@@ -30,7 +30,7 @@ export async function POST(
     }
     // throw error if no data
     if (!body || !body.name || !body.value) {
-      return NextResponse.json("Size name or Size value is missing", {
+      return NextResponse.json("Kitchen name or Kitchen value is missing", {
         status: 400,
       });
     }
@@ -42,7 +42,7 @@ export async function POST(
     }
     // assign data
     const { name, value } = body;
-    const sizeData = {
+    const kitchenData = {
       name,
       value,
       createdAt: serverTimestamp(),
@@ -60,40 +60,40 @@ export async function POST(
     }
 
     // add data to firestore and retrieve reference id
-    const sizeRef = await addDoc(
-      collection(db, "stores", params.storeId, "sizes"),
-      sizeData,
+    const kitchenRef = await addDoc(
+      collection(db, "stores", params.storeId, "kitchens"),
+      kitchenData,
     );
     // get reference id
-    const id = sizeRef.id;
+    const id = kitchenRef.id;
     // update newly created store data
-    await updateDoc(doc(db, "stores", params.storeId, "sizes", id), {
-      ...sizeData,
+    await updateDoc(doc(db, "stores", params.storeId, "kitchens", id), {
+      ...kitchenData,
       id,
       updatedAt: serverTimestamp(),
     });
 
     // Invalidate the Redis cache
-    const cacheKey = `sizes_${params.storeId}`;
-    const cachedSizes = await redis.get(cacheKey);
-    const sizes = cachedSizes ? JSON.parse(cachedSizes) : [];
+    const cacheKey = `kitchens_${params.storeId}`;
+    const cachedKitchens = await redis.get(cacheKey);
+    const kitchens = cachedKitchens ? JSON.parse(cachedKitchens) : [];
 
-    // Append the new size to the cached sizes list
-    sizes.push({ id, ...sizeData });
+    // Append the new kitchen to the cached sizes list
+    kitchens.push({ id, ...kitchenData });
 
-    // Save the updated sizes list back to Redis
-    await redis.set(cacheKey, JSON.stringify(sizes));
+    // Save the updated stores list back to Redis
+    await redis.set(cacheKey, JSON.stringify(kitchens));
 
-    return NextResponse.json({ id, ...sizeData }, { status: 200 });
+    return NextResponse.json({ id, ...kitchenData }, { status: 200 });
   } catch (error) {
-    console.log(`SIZES_POST: ${error}`);
+    console.log(`KITCHENS_POST: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });
   }
 }
 
-// get size handler
+// get kitchen handler
 export async function GET(
   request: NextRequest,
   { params }: { params: { storeId: string } },
@@ -104,25 +104,25 @@ export async function GET(
       return NextResponse.json("Store ID is missing", { status: 400 });
     }
     // get redis cache
-    const cacheKey = `sizes_${params.storeId}`;
-    const cachedSize = await redis.get(cacheKey);
+    const cacheKey = `kitchens_${params.storeId}`;
+    const cachedKitchen = await redis.get(cacheKey);
 
-    if (cachedSize) {
-      return NextResponse.json(JSON.parse(cachedSize), { status: 200 });
+    if (cachedKitchen) {
+      return NextResponse.json(JSON.parse(cachedKitchen), { status: 200 });
     }
-    // get sizes if no redis cache
-    const sizes = (
-      await getDocs(collection(doc(db, "stores", params.storeId), "sizes"))
-    ).docs.map((doc) => doc.data()) as Size[];
+    // get kitchens if no redis cache
+    const kitchens = (
+      await getDocs(collection(doc(db, "stores", params.storeId), "kitchens"))
+    ).docs.map((doc) => doc.data()) as Kitchen[];
 
-    if (sizes) {
-      await redis.set(cacheKey, JSON.stringify(sizes));
-      return NextResponse.json(sizes, { status: 200 });
+    if (kitchens) {
+      await redis.set(cacheKey, JSON.stringify(kitchens));
+      return NextResponse.json(kitchens, { status: 200 });
     } else {
-      return NextResponse.json("Sizes not found", { status: 404 });
+      return NextResponse.json("Kitchens not found", { status: 404 });
     }
   } catch (error) {
-    console.log(`SIZES_GET: ${error}`);
+    console.log(`KITCHENS_GET: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });

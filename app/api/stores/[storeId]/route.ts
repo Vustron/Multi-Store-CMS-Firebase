@@ -36,8 +36,19 @@ export async function PATCH(
 
     // update redis cache
     const cacheKey = `stores_${params.storeId}`;
-    await redis.del(cacheKey);
-    await redis.set(`stores_${params.storeId}`, JSON.stringify(store));
+    const cachedStores = await redis.get(cacheKey);
+    const stores = cachedStores ? JSON.parse(cachedStores) : [];
+
+    // Find and update the specific store in the cached list
+    const index = stores.findIndex((s: Store) => s.id === params.storeId);
+    if (index !== -1) {
+      stores[index] = { ...stores[index], ...store };
+    } else {
+      stores.push(store); // If store is not in cache, add it
+    }
+
+    // Save the updated stores list back to Redis
+    await redis.set(cacheKey, JSON.stringify(stores));
 
     return NextResponse.json(store, { status: 200 });
   } catch (error) {

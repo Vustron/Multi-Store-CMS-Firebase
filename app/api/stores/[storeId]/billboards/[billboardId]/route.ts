@@ -83,8 +83,21 @@ export async function PATCH(
 
     // Invalidate the Redis cache
     const cacheKey = `billboards_${params.storeId}`;
-    await redis.del(cacheKey);
-    await redis.set(`billboards_${params.storeId}`, JSON.stringify(billboard));
+    const cachedBillboards = await redis.get(cacheKey);
+    const billboards = cachedBillboards ? JSON.parse(cachedBillboards) : [];
+
+    // Find and update the specific billboard in the cached list
+    const index = billboards.findIndex(
+      (s: Billboards) => s.id === params.storeId,
+    );
+    if (index !== -1) {
+      billboards[index] = { ...billboards[index], ...store };
+    } else {
+      billboards.push(store); // If billboard is not in cache, add it
+    }
+
+    // Save the updated billboards list back to Redis
+    await redis.set(cacheKey, JSON.stringify(billboards));
 
     return NextResponse.json(billboard, { status: 200 });
   } catch (error) {

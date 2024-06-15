@@ -7,15 +7,15 @@ import {
 } from "firebase/firestore";
 
 import { NextResponse, NextRequest } from "next/server";
-import { Category } from "@/lib/helpers/types";
+import { Kitchen } from "@/lib/helpers/types";
 import { db } from "@/lib/services/firebase";
 import { auth } from "@clerk/nextjs/server";
 import redis from "@/lib/services/redis";
 
-// patch category handler
+// patch kitchen handler
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { storeId: string; categoryId: string } },
+  { params }: { params: { storeId: string; kitchenId: string } },
 ) {
   try {
     // get user
@@ -27,13 +27,10 @@ export async function PATCH(
       return NextResponse.json("Unauthorized", { status: 401 });
     }
     // throw error if no data
-    if (!body || !body.name || !body.billboardLabel || !body.billboardId) {
-      return NextResponse.json(
-        "Category Name or Billboard name or Billboard ID is missing",
-        {
-          status: 400,
-        },
-      );
+    if (!body || !body.name || !body.value) {
+      return NextResponse.json("Kitchen name or Kitchen value is missing", {
+        status: 400,
+      });
     }
     // throw error if no store id
     if (!params.storeId) {
@@ -42,14 +39,14 @@ export async function PATCH(
       });
     }
 
-    // throw error if no category id
-    if (!params.categoryId) {
-      return NextResponse.json("Category ID is missing", {
+    // throw error if no kitchen id
+    if (!params.kitchenId) {
+      return NextResponse.json("Kitchen ID is missing", {
         status: 400,
       });
     }
     // assign data
-    const { name, billboardLabel, billboardId } = body;
+    const { name, value } = body;
 
     const store = await getDoc(doc(db, "stores", params.storeId));
 
@@ -60,63 +57,61 @@ export async function PATCH(
         return NextResponse.json("Unauthorized access", { status: 500 });
       }
     }
-
-    const categoryRef = await getDoc(
-      doc(db, "stores", params.storeId, "categories", params.categoryId),
+    // add data to firestore and retrieve reference id
+    const kitchenRef = await getDoc(
+      doc(db, "stores", params.storeId, "kitchens", params.kitchenId),
     );
-
-    if (categoryRef.exists()) {
+    // update the kitchen data if exists
+    if (kitchenRef.exists()) {
       await updateDoc(
-        doc(db, "stores", params.storeId, "categories", params.categoryId),
+        doc(db, "stores", params.storeId, "kitchens", params.kitchenId),
         {
-          ...categoryRef.data(),
+          ...kitchenRef.data(),
           name,
-          billboardId,
-          billboardLabel,
+          value,
           updatedAt: serverTimestamp(),
         },
       );
     } else {
-      return NextResponse.json("Category not found", { status: 404 });
+      return NextResponse.json("Kitchen not found", { status: 404 });
     }
 
-    const category = (
+    // get the newly updated data
+    const kitchen = (
       await getDoc(
-        doc(db, "stores", params.storeId, "categories", params.categoryId),
+        doc(db, "stores", params.storeId, "kitchens", params.kitchenId),
       )
-    ).data() as Category;
+    ).data() as Kitchen;
 
     // Invalidate the Redis cache
-    const cacheKey = `categories_${params.storeId}`;
-    const cachedCategories = await redis.get(cacheKey);
-    const categories = cachedCategories ? JSON.parse(cachedCategories) : [];
+    const cacheKey = `kitchens_${params.storeId}`;
+    const cachedKitchens = await redis.get(cacheKey);
+    const kitchens = cachedKitchens ? JSON.parse(cachedKitchens) : [];
 
-    // Find and update the specific category in the cached list
-    const index = categories.findIndex(
-      (s: Category) => s.id === params.storeId,
-    );
+    // Find and update the specific kitchen in the cached list
+    const index = kitchens.findIndex((s: Kitchen) => s.id === params.storeId);
     if (index !== -1) {
-      categories[index] = { ...categories[index], ...store };
+      kitchens[index] = { ...kitchens[index], ...store };
     } else {
-      categories.push(store); // If category is not in cache, add it
+      kitchens.push(store); // If kitchen is not in cache, add it
     }
 
-    // Save the updated categories list back to Redis
-    await redis.set(cacheKey, JSON.stringify(categories));
+    // Save the updated kitchens list back to Redis
+    await redis.set(cacheKey, JSON.stringify(kitchens));
 
-    return NextResponse.json(category, { status: 200 });
+    return NextResponse.json(kitchen, { status: 200 });
   } catch (error) {
-    console.log(`CATEGORIES_PATCH: ${error}`);
+    console.log(`KITCHEN_PATCH: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });
   }
 }
 
-// delete billboard handler
+// delete kitchen handler
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { storeId: string; categoryId: string } },
+  { params }: { params: { storeId: string; kitchenId: string } },
 ) {
   try {
     // get user
@@ -134,12 +129,13 @@ export async function DELETE(
       });
     }
     // throw error if no category id
-    if (!params.categoryId) {
-      return NextResponse.json("Category ID is missing", {
+    if (!params.kitchenId) {
+      return NextResponse.json("Kitchen ID is missing", {
         status: 400,
       });
     }
 
+    // get store
     const store = await getDoc(doc(db, "stores", params.storeId));
 
     if (store.exists()) {
@@ -150,23 +146,25 @@ export async function DELETE(
       }
     }
 
-    const categoryRef = doc(
+    // get kitchen ref from store
+    const kitchenRef = doc(
       db,
       "stores",
       params.storeId,
-      "categories",
-      params.categoryId,
+      "kitchens",
+      params.kitchenId,
     );
 
-    await deleteDoc(categoryRef);
+    // delete if found
+    await deleteDoc(kitchenRef);
 
     // Invalidate the Redis cache
-    const cacheKey = `categories_${params.storeId}`;
+    const cacheKey = `kitchens_${params.storeId}`;
     await redis.del(cacheKey);
 
-    return NextResponse.json("Category deleted", { status: 200 });
+    return NextResponse.json("Kitchen deleted", { status: 200 });
   } catch (error) {
-    console.log(`CATEGORY_DELETE: ${error}`);
+    console.log(`KITCHEN_DELETE: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });

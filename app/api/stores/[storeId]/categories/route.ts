@@ -76,13 +76,16 @@ export async function POST(
       updatedAt: serverTimestamp(),
     });
 
-    // update redis cache
+    // Invalidate the Redis cache
     const cacheKey = `categories_${params.storeId}`;
-    await redis.del(cacheKey);
-    await redis.set(
-      `categories_${params.storeId}`,
-      JSON.stringify({ id, ...categoryData }),
-    );
+    const cachedCategories = await redis.get(cacheKey);
+    const categories = cachedCategories ? JSON.parse(cachedCategories) : [];
+
+    // Append the new category to the cached categories list
+    categories.push({ id, ...categoryData });
+
+    // Save the updated categories list back to Redis
+    await redis.set(cacheKey, JSON.stringify(categories));
 
     return NextResponse.json({ id, ...categoryData }, { status: 200 });
   } catch (error) {
