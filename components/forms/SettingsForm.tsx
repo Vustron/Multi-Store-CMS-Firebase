@@ -11,6 +11,7 @@ import {
 
 import { useDeleteStore } from "@/lib/hooks/api/stores/useDeleteStore";
 import { useUpdateStore } from "@/lib/hooks/api/stores/useUpdateStore";
+import { noSqlInjection, urlPattern } from "@/lib/helpers/utils";
 import { useConfirm } from "@/lib/hooks/misc/useConfirm";
 import { useParams, useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,9 +31,12 @@ interface Props {
 }
 
 export const UpdateStoreFormSchema = z.object({
-  name: z.string().min(3, {
-    message: "Store name is minimum of three characters.",
-  }),
+  name: z
+    .string()
+    .min(3, { message: "Store name must be at least three characters." })
+    .max(50, { message: "Store name must be less than 50 characters." })
+    .regex(urlPattern, { message: "Invalid URL format." })
+    .refine(noSqlInjection, { message: "Invalid characters detected." }),
 });
 
 const SettingsForm = ({ initialData }: Props) => {

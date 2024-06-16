@@ -11,6 +11,7 @@ import {
 
 import { useCreateStore } from "@/lib/hooks/api/stores/useCreateStore";
 import { useStoreModal } from "@/lib/hooks/modals/useStoreModal";
+import { noSqlInjection, urlPattern } from "@/lib/helpers/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui//Button";
 import { Input } from "@/components/ui/Input";
@@ -20,9 +21,12 @@ import toast from "react-hot-toast";
 import { z } from "zod";
 
 export const CreateStoreFormSchema = z.object({
-  name: z.string().min(3, {
-    message: "Store name is minimum of three characters.",
-  }),
+  name: z
+    .string()
+    .min(3, { message: "Store name must be at least three characters." })
+    .max(50, { message: "Store name must be less than 50 characters." })
+    .regex(urlPattern, { message: "Invalid URL format." })
+    .refine(noSqlInjection, { message: "Invalid characters detected." }),
 });
 
 export const CreateStoreForm = () => {

@@ -11,6 +11,7 @@ import {
 
 import { useUpdateCuisine } from "@/lib/hooks/api/cuisines/useUpdateCuisine";
 import { useDeleteCuisine } from "@/lib/hooks/api/cuisines/useDeleteCuisine";
+import { noSqlInjection, urlPattern } from "@/lib/helpers/utils";
 import { useConfirm } from "@/lib/hooks/misc/useConfirm";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Separator } from "@/components/ui/Separator";
@@ -30,12 +31,18 @@ interface Props {
 }
 
 export const UpdateCuisineFormSchema = z.object({
-  name: z.string().min(3, {
-    message: "Cuisine name must be at least three characters.",
-  }),
-  value: z.string().min(1, {
-    message: "Cuisine value must be at least three characters.",
-  }),
+  name: z
+    .string()
+    .min(3, { message: "Cuisine name must be at least three characters." })
+    .max(50, { message: "Cuisine name must be less than 50 characters." })
+    .regex(urlPattern, { message: "Invalid URL format." })
+    .refine(noSqlInjection, { message: "Invalid characters detected." }),
+  value: z
+    .string()
+    .min(1, { message: "Cuisine value must be at least one character." })
+    .max(50, { message: "Cuisine value must be less than 50 characters." })
+    .regex(urlPattern, { message: "Invalid URL format." })
+    .refine(noSqlInjection, { message: "Invalid characters detected." }),
 });
 
 const UpdateCuisineForm = ({ storeId, initialData }: Props) => {

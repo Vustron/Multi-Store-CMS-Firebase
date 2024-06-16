@@ -18,9 +18,10 @@ import {
 } from "@/components/ui/Select";
 
 import { useCreateCategory } from "@/lib/hooks/api/categories/useCreateCategory";
+import { noSqlInjection, urlPattern } from "@/lib/helpers/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Billboard } from "@/lib/helpers/types";
 import { Button } from "@/components/ui//Button";
+import { Billboard } from "@/lib/helpers/types";
 import { Input } from "@/components/ui/Input";
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
@@ -33,11 +34,24 @@ interface Props {
 }
 
 export const CategoryFormSchema = z.object({
-  name: z.string().min(3, {
-    message: "Category name must be at least three characters.",
-  }),
-  billboardId: z.string().min(1, { message: "Billboard ID is required." }),
-  billboardLabel: z.string().optional(),
+  name: z
+    .string()
+    .min(3, { message: "Category name must be at least three characters." })
+    .max(50, { message: "Category name must be less than 50 characters." })
+    .regex(urlPattern, { message: "Invalid URL format." })
+    .refine(noSqlInjection, { message: "Invalid characters detected." }),
+  billboardId: z
+    .string()
+    .min(1, { message: "Billboard ID is required." })
+    .max(50, { message: "Billboard ID must be less than 50 characters." })
+    .regex(urlPattern, { message: "Invalid URL format." })
+    .refine(noSqlInjection, { message: "Invalid characters detected." }),
+  billboardLabel: z
+    .string()
+    .max(50, { message: "Billboard label must be less than 50 characters." })
+    .regex(urlPattern, { message: "Invalid URL format." })
+    .refine(noSqlInjection, { message: "Invalid characters detected." })
+    .optional(),
 });
 
 const CreateCategoryForm = ({ storeId, billboards }: Props) => {

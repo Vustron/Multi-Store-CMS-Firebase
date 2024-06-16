@@ -7,9 +7,10 @@ import {
 } from "firebase/firestore";
 
 import { NextResponse, NextRequest } from "next/server";
-import { db } from "@/lib/services/firebase";
-import { auth } from "@clerk/nextjs/server";
+import { db, storage } from "@/lib/services/firebase";
+import { deleteObject, ref } from "firebase/storage";
 import { Product } from "@/lib/helpers/types";
+import { auth } from "@clerk/nextjs/server";
 import redis from "@/lib/services/redis";
 
 // patch product handler
@@ -26,25 +27,14 @@ export async function PATCH(
     if (!userId) {
       return NextResponse.json("Unauthorized", { status: 401 });
     }
-    // throw error if no data
-    if (
-      !body ||
-      !body.name ||
-      !body.price ||
-      !body.image ||
-      !body.isFeatured ||
-      !body.isArchived ||
-      !body.category ||
-      !body.size ||
-      !body.kitchen ||
-      !body.cuisine
-    ) {
-      return NextResponse.json(
-        "Either of the Product's name,price,image,isFeatured,isArchived,category,size,kitchen,cuisine are missing",
-        {
+    // throw error if any required fields are missing
+    const requiredFields = ["name", "price", "images", "category"];
+    for (const field of requiredFields) {
+      if (!body[field]) {
+        return NextResponse.json(`Product ${field} is missing`, {
           status: 400,
-        },
-      );
+        });
+      }
     }
 
     // throw error if no store id
@@ -64,7 +54,7 @@ export async function PATCH(
     const {
       name,
       price,
-      image,
+      images,
       isFeatured,
       isArchived,
       category,
@@ -94,7 +84,7 @@ export async function PATCH(
           ...productRef.data(),
           name,
           price,
-          image,
+          images,
           isFeatured,
           isArchived,
           category,
@@ -186,6 +176,23 @@ export async function DELETE(
       params.productId,
     );
 
+    // images check
+    const productDoc = await getDoc(productRef);
+    if (!productDoc.exists()) {
+      return NextResponse.json("Product not found", { status: 404 });
+    }
+
+    // delete images if exists
+    const images = productDoc.data()?.images;
+    if (images && Array.isArray(images)) {
+      await Promise.all(
+        images.map(async (image) => {
+          const imageRef = ref(storage, image.url);
+          await deleteObject(imageRef);
+        }),
+      );
+    }
+
     // delete if found
     await deleteDoc(productRef);
 
@@ -193,9 +200,60 @@ export async function DELETE(
     const cacheKey = `products_${params.storeId}`;
     await redis.del(cacheKey);
 
-    return NextResponse.json("Product deleted", { status: 200 });
+    return NextResponse.json("Product and associated images deleted", {
+      status: 200,
+    });
   } catch (error) {
     console.log(`PRODUCT_DELETE: ${error}`);
+    return NextResponse.json("Internal Server Error", {
+      status: 500,
+    });
+  }
+}
+
+// get product id handler
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { storeId: string; productId: string } },
+) {
+  try {
+    // throw error if no store id
+    if (!params.storeId) {
+      return NextResponse.json("Store ID is missing", {
+        status: 400,
+      });
+    }
+
+    // throw error if no product id
+    if (!params.productId) {
+      return NextResponse.json("Product ID is missing", {
+        status: 400,
+      });
+    }
+
+    // get redis cache
+    const cacheKey = `products_${params.storeId}`;
+    const cachedProduct = await redis.get(cacheKey);
+
+    if (cachedProduct) {
+      return NextResponse.json(JSON.parse(cachedProduct), { status: 200 });
+    }
+
+    // get product
+    const product = (
+      await getDoc(
+        doc(db, "stores", params.storeId, "products", params.productId),
+      )
+    ).data() as Product;
+
+    if (product) {
+      await redis.set(cacheKey, JSON.stringify(product));
+      return NextResponse.json(product, { status: 200 });
+    } else {
+      return NextResponse.json("Product not found", { status: 404 });
+    }
+  } catch (error) {
+    console.log(`PRODUCT_ID_GET: ${error}`);
     return NextResponse.json("Internal Server Error", {
       status: 500,
     });

@@ -16,7 +16,6 @@ const Navbar = ({ userId, storeId }: { userId: string; storeId: string }) => {
   const loading = stores.isLoading;
   // error state
   const error = stores.error;
-  console.log(data);
 
   return (
     <div className="border-b">

@@ -28,25 +28,14 @@ export async function POST(
     if (!userId) {
       return NextResponse.json("Unauthorized", { status: 401 });
     }
-    // throw error if no data
-    if (
-      !body ||
-      !body.name ||
-      !body.price ||
-      !body.image ||
-      !body.isFeatured ||
-      !body.isArchived ||
-      !body.category ||
-      !body.size ||
-      !body.kitchen ||
-      !body.cuisine
-    ) {
-      return NextResponse.json(
-        "Either of the Product's name,price,image,isFeatured,isArchived,category,size,kitchen,cuisine are missing",
-        {
+    // throw error if any required fields are missing
+    const requiredFields = ["name", "price", "images", "category"];
+    for (const field of requiredFields) {
+      if (!body[field]) {
+        return NextResponse.json(`Product ${field} is missing`, {
           status: 400,
-        },
-      );
+        });
+      }
     }
     // throw error if no store id
     if (!params.storeId) {
@@ -58,7 +47,7 @@ export async function POST(
     const {
       name,
       price,
-      image,
+      images,
       isFeatured,
       isArchived,
       category,
@@ -69,7 +58,7 @@ export async function POST(
     const productData = {
       name,
       price,
-      image,
+      images,
       isFeatured,
       isArchived,
       category,
@@ -86,7 +75,7 @@ export async function POST(
       let storeData = store.data();
 
       if (storeData?.userId !== userId) {
-        return NextResponse.json("Unauthorized access", { status: 500 });
+        return NextResponse.json("Unauthorized access", { status: 400 });
       }
     }
 
@@ -121,7 +110,7 @@ export async function POST(
     // Save the updated products list back to Redis
     await redis.set(cacheKey, JSON.stringify(products));
 
-    return NextResponse.json(product, { status: 200 });
+    return NextResponse.json({ id, ...productData }, { status: 200 });
   } catch (error) {
     console.log(`PRODUCTS_POST: ${error}`);
     return NextResponse.json("Internal Server Error", {

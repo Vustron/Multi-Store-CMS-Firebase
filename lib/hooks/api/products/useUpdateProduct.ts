@@ -1,6 +1,6 @@
 "use client";
 
-import { UpdateSizeFormSchema } from "@/components/forms/UpdateSizeForm";
+import { UpdateProductFormSchema } from "@/components/forms/UpdateProductForm";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -13,7 +13,7 @@ export const useUpdateProduct = (storeId?: string, productId?: string) => {
   const router = useRouter();
 
   const mutation = useMutation({
-    mutationFn: async (values: z.infer<typeof UpdateSizeFormSchema>) => {
+    mutationFn: async (values: z.infer<typeof UpdateProductFormSchema>) => {
       const { data } = await axios.patch(
         `/api/stores/${storeId}/products/${productId}`,
         values,
@@ -23,6 +23,9 @@ export const useUpdateProduct = (storeId?: string, productId?: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["products", storeId, productId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["products", storeId],
       });
 
       router.replace(`/${storeId}/products`);

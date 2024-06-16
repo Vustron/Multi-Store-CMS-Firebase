@@ -80,7 +80,7 @@ const StoreSwitcher = ({ items = [] }: StoreSwitcherProps) => {
           aria-expanded={open}
           className="w-[200px] justify-between"
         >
-          <StoreIcon className="mr-2 size-4" />
+          <StoreIcon className="mr-2 size-4 min-w-4" />
           {currentStore ? currentStore.label : "Select store..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>

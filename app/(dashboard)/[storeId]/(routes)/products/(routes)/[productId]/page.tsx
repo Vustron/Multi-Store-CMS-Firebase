@@ -8,6 +8,7 @@ import { useGetSizes } from "@/lib/hooks/api/sizes/useGetSizes";
 import UpdateSizeForm from "@/components/forms/UpdateSizeForm";
 import { Separator } from "@/components/ui/Separator";
 import Heading from "@/components/shared/Heading";
+import UpdateProductForm from "@/components/forms/UpdateProductForm";
 
 export default function ProductIdPage({
   params,
@@ -61,12 +62,18 @@ export default function ProductIdPage({
         <Separator />
 
         {loading ? (
-          <span>...loading products</span>
+          <span>...loading product</span>
         ) : error ? (
           <span>Something went wrong {error.message}</span>
         ) : (
-          <span>Todo</span>
-          // <UpdateSizeForm storeId={params.storeId} initialData={data} />
+          <UpdateProductForm
+            storeId={params.storeId}
+            initialData={productData}
+            categories={categoriesData}
+            sizes={sizesData}
+            kitchens={kitchensData}
+            cuisines={cuisinesData}
+          />
         )}
       </div>
     </div>

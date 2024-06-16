@@ -18,8 +18,8 @@ import {
   SelectItem,
 } from "@/components/ui/Select";
 
-import { useCreateProduct } from "@/lib/hooks/api/products/useCreateProduct";
-import { Category, Cuisine, Kitchen, Size } from "@/lib/helpers/types";
+import { Category, Cuisine, Kitchen, Product, Size } from "@/lib/helpers/types";
+import { useUpdateProduct } from "@/lib/hooks/api/products/useUpdateProduct";
 import { noSqlInjection, urlPattern } from "@/lib/helpers/utils";
 import ImagesUpload from "@/components/shared/ImagesUpload";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -34,13 +34,14 @@ import { z } from "zod";
 
 interface Props {
   storeId?: string;
+  initialData: Product | undefined;
   categories: Category[];
   sizes: Size[];
   kitchens: Kitchen[];
   cuisines: Cuisine[];
 }
 
-export const ProductFormSchema = z.object({
+export const UpdateProductFormSchema = z.object({
   name: z
     .string()
     .min(3, { message: "Product name must be at least three characters." })
@@ -88,38 +89,29 @@ export const ProductFormSchema = z.object({
     .optional(),
 });
 
-const CreateProductForm = ({
+const UpdateProductForm = ({
   storeId,
+  initialData,
   categories,
   sizes,
   kitchens,
   cuisines,
 }: Props) => {
   // init create product hook
-  const mutation = useCreateProduct(storeId);
+  const mutation = useUpdateProduct(storeId, initialData!.id);
 
   // init loading state
   const isLoading = mutation.isPending;
   // init form
-  const form = useForm<z.infer<typeof ProductFormSchema>>({
-    resolver: zodResolver(ProductFormSchema),
-    defaultValues: {
-      name: "",
-      price: 0,
-      images: [],
-      isFeatured: false,
-      isArchived: false,
-      category: "",
-      size: "",
-      kitchen: "",
-      cuisine: "",
-    },
+  const form = useForm<z.infer<typeof UpdateProductFormSchema>>({
+    resolver: zodResolver(UpdateProductFormSchema),
+    defaultValues: initialData,
   });
 
-  const onSubmit = async (values: z.infer<typeof ProductFormSchema>) => {
+  const onSubmit = async (values: z.infer<typeof UpdateProductFormSchema>) => {
     await toast.promise(mutation.mutateAsync(values), {
-      loading: <span className="animate-pulse">Creating product...</span>,
-      success: "Product created",
+      loading: <span className="animate-pulse">Updating product...</span>,
+      success: "Product updated",
       error: "Something went wrong",
     });
 
@@ -134,7 +126,6 @@ const CreateProductForm = ({
           className="w-full space-y-8"
         >
           {/* images */}
-          {/* Name */}
           <FormField
             name="images"
             control={form.control}
@@ -406,11 +397,11 @@ const CreateProductForm = ({
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
-                <span className="animate-pulse">Creating product...</span>
+                <span className="animate-pulse">Updating product...</span>
               </>
             ) : (
               <>
-                <span>Create Product</span>
+                <span>Save changes</span>
               </>
             )}
           </Button>
@@ -420,4 +411,4 @@ const CreateProductForm = ({
   );
 };
 
-export default CreateProductForm;
+export default UpdateProductForm;

@@ -21,6 +21,9 @@ export const useDeleteBillboard = (storeId?: string, billboardId?: string) => {
       queryClient.invalidateQueries({
         queryKey: ["billboards", storeId, billboardId],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["billboards", storeId],
+      });
 
       router.replace(`/${storeId}/billboards`);
     },

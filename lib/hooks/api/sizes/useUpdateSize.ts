@@ -24,6 +24,9 @@ export const useUpdateSize = (storeId?: string, sizeId?: string) => {
       queryClient.invalidateQueries({
         queryKey: ["sizes", storeId, sizeId],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["sizes", storeId],
+      });
 
       router.replace(`/${storeId}/sizes`);
     },

@@ -21,6 +21,9 @@ export const useDeleteCategory = (storeId?: string, categoryId?: string) => {
       queryClient.invalidateQueries({
         queryKey: ["categories", storeId, categoryId],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["categories", storeId],
+      });
 
       router.replace(`/${storeId}/categories`);
     },

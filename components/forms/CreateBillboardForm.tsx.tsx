@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/Form";
 
 import { useCreateBillboard } from "@/lib/hooks/api/billboard/useCreateBillboard";
+import { noSqlInjection, urlPattern } from "@/lib/helpers/utils";
 import ImageUpload from "@/components/shared/ImageUpload";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui//Button";
@@ -24,10 +25,17 @@ interface Props {
 }
 
 export const BillboardFormSchema = z.object({
-  label: z.string().min(3, {
-    message: "Billboard name must be at least three characters.",
-  }),
-  imageUrl: z.string().min(1, { message: "Image URL is required." }),
+  label: z
+    .string()
+    .min(3, { message: "Billboard name must be at least three characters." })
+    .max(50, { message: "Billboard name must be less than 50 characters." })
+    .refine(noSqlInjection, { message: "Invalid characters detected." }),
+  imageUrl: z
+    .string()
+    .min(1, { message: "Image URL is required." })
+    .max(2048, { message: "Image URL must be less than 2048 characters." })
+    .regex(urlPattern, { message: "Invalid URL format." })
+    .refine(noSqlInjection, { message: "Invalid characters detected." }),
 });
 
 const CreateBillboardForm = ({ storeId }: Props) => {

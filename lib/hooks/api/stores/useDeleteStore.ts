@@ -16,7 +16,7 @@ export const useDeleteStore = (storeId?: string) => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["stores", { storeId }] });
+      queryClient.invalidateQueries({ queryKey: ["stores", storeId] });
 
       router.push("/");
     },

@@ -24,6 +24,7 @@ export const useCreateKitchen = (storeId?: string) => {
       queryClient.invalidateQueries({
         queryKey: ["kitchens", storeId],
       });
+
       router.replace(`/${storeId}/kitchens`);
     },
   });

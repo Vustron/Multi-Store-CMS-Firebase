@@ -21,6 +21,9 @@ export const useDeleteKitchen = (storeId?: string, kitchenId?: string) => {
       queryClient.invalidateQueries({
         queryKey: ["kitchens", storeId, kitchenId],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["kitchens", storeId],
+      });
 
       router.replace(`/${storeId}/kitchens`);
     },
