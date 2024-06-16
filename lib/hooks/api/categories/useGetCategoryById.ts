@@ -16,7 +16,7 @@ const fetchCategory = async (storeId: string, categoryId: string) => {
 
 export const useGetCategoryById = (storeId: string, categoryId: string) => {
   return useQuery({
-    queryKey: ["stores", storeId, "categories", categoryId],
+    queryKey: ["categories", storeId, categoryId],
     queryFn: async () => fetchCategory(storeId, categoryId),
   });
 };

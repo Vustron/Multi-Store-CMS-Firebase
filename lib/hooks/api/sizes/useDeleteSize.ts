@@ -19,10 +19,7 @@ export const useDeleteSize = (storeId?: string, sizeId?: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["stores", storeId, "sizes", sizeId],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["stores", storeId],
+        queryKey: ["sizes", storeId, sizeId],
       });
 
       router.replace(`/${storeId}/sizes`);

@@ -13,7 +13,7 @@ export const useGetKitchens = ({
   };
 }) => {
   const query = useQuery({
-    queryKey: ["stores", params.storeId],
+    queryKey: ["kitchens", params.storeId],
     enabled: !!params.storeId,
     queryFn: async () => {
       const kitchens = (

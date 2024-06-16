@@ -13,7 +13,7 @@ export const useGetSizes = ({
   };
 }) => {
   const query = useQuery({
-    queryKey: ["stores", params.storeId],
+    queryKey: ["sizes", params.storeId],
     enabled: !!params.storeId,
     queryFn: async () => {
       const sizes = (

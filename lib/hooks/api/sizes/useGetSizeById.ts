@@ -16,7 +16,7 @@ const fetchSize = async (storeId: string, sizeId: string) => {
 
 export const useGetSizeById = (storeId: string, sizeId: string) => {
   return useQuery({
-    queryKey: ["stores", storeId, "sizes", sizeId],
+    queryKey: ["sizes", storeId, sizeId],
     queryFn: async () => fetchSize(storeId, sizeId),
   });
 };

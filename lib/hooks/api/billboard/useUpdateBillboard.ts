@@ -22,11 +22,9 @@ export const useUpdateBillboard = (storeId?: string, billboardId?: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["stores", storeId, "billboards", billboardId],
+        queryKey: ["billboards", storeId, billboardId],
       });
-      queryClient.invalidateQueries({
-        queryKey: ["stores", storeId],
-      });
+
       router.replace(`/${storeId}/billboards`);
       // window.location.assign(`/${data?.id}`);
     },

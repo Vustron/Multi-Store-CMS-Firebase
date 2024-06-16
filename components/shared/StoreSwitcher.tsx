@@ -4,17 +4,13 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
-  CommandItem,
   CommandList,
 } from "@/components/ui/Command";
-
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/Popover";
-
 import { ChevronsUpDown, Store as StoreIcon } from "lucide-react";
 import { useStoreModal } from "@/lib/hooks/modals/useStoreModal";
 import { useParams, useRouter } from "next/navigation";
@@ -30,10 +26,10 @@ type PopoverTriggerProps = React.ComponentPropsWithoutRef<
 >;
 
 interface StoreSwitcherProps extends PopoverTriggerProps {
-  items: Store[] | undefined;
+  items: Store[];
 }
 
-const StoreSwitcher = ({ items }: StoreSwitcherProps) => {
+const StoreSwitcher = ({ items = [] }: StoreSwitcherProps) => {
   // init states
   const [open, setOpen] = useState(false);
   const [search, setIsSearching] = useState("");
@@ -46,26 +42,31 @@ const StoreSwitcher = ({ items }: StoreSwitcherProps) => {
   const params = useParams();
   // init router
   const router = useRouter();
-  // init formatted data
-  const formattedStores = items?.map((item) => ({
+
+  // Ensure items is an array
+  const formattedStores = (Array.isArray(items) ? items : []).map((item) => ({
     label: item.name,
     value: item.id,
   }));
+
   // init current store
-  const currentStore = formattedStores?.find(
-    (item) => item.value === params.storeId,
+  const currentStore = formattedStores.find(
+    (item) => item.value === params?.storeId,
   );
+
   // init select store handler
   const onStoreSelect = (store: { value: string; label: string }) => {
     setOpen(false);
     router.replace(`/${store.value}`);
   };
+
   // handle search store
   const handleSearch = (e: any) => {
-    setIsSearching(e.target.value);
+    const searchValue = e.target.value;
+    setIsSearching(searchValue);
     setIsFilterItem(
-      formattedStores!.filter((item) =>
-        item.label.toLowerCase().includes(search.toLowerCase()),
+      formattedStores.filter((item) =>
+        item.label.toLowerCase().includes(searchValue.toLowerCase()),
       ),
     );
   };
@@ -80,11 +81,7 @@ const StoreSwitcher = ({ items }: StoreSwitcherProps) => {
           className="w-[200px] justify-between"
         >
           <StoreIcon className="mr-2 size-4" />
-          {currentStore?.value
-            ? formattedStores!.find(
-                (store) => store.value === currentStore?.value,
-              )?.label
-            : "Select store..."}
+          {currentStore ? currentStore.label : "Select store..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -102,7 +99,7 @@ const StoreSwitcher = ({ items }: StoreSwitcherProps) => {
           <CommandList>
             <CommandGroup heading="Stores">
               {search === "" ? (
-                formattedStores!.map((item, index) => (
+                formattedStores.map((item, index) => (
                   <StoreListItem
                     store={item}
                     key={index}

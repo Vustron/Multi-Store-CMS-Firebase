@@ -21,7 +21,7 @@ export const useCreateStore = () => {
       return data;
     },
     onSuccess: (data: any) => {
-      queryClient.invalidateQueries({ queryKey: ["stores"] });
+      queryClient.invalidateQueries({ queryKey: ["stores", data?.id] });
       router.replace(`/${data?.id}`);
       onClose();
     },

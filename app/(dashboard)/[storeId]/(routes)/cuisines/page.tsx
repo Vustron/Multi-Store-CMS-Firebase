@@ -4,7 +4,6 @@ import { useGetCuisines } from "@/lib/hooks/api/cuisines/useGetCuisines";
 import { CuisineColumns } from "./columns";
 import CuisinesClient from "./client";
 import { format } from "date-fns";
-import { useEffect } from "react";
 
 interface Props {
   params: {
@@ -15,20 +14,12 @@ interface Props {
 export default function CuisinesPage({ params }: Props) {
   // get cuisines
   const cuisines = useGetCuisines({ params });
-
-  // Refetch data when component mounts
-  useEffect(() => {
-    cuisines.refetch();
-  }, [cuisines.refetch]);
-
   // set data
   const data = cuisines.data || [];
-  // init loading state
-  const isLoading = cuisines.isLoading;
-
-  if (isLoading) {
-    return <>...fetching cuisines</>;
-  }
+  // loading state
+  const loading = cuisines.isLoading;
+  // error state
+  const error = cuisines.error;
 
   const formattedData: CuisineColumns[] = data.map((item) => ({
     id: item.id,
@@ -42,7 +33,13 @@ export default function CuisinesPage({ params }: Props) {
   return (
     <div className="flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
-        <CuisinesClient data={formattedData} storeId={params.storeId} />
+        {loading ? (
+          <span>...loading cuisines</span>
+        ) : error ? (
+          <span>Something went wrong {error.message}</span>
+        ) : (
+          <CuisinesClient data={formattedData} storeId={params.storeId} />
+        )}
       </div>
     </div>
   );

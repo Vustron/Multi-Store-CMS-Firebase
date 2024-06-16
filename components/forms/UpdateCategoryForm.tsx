@@ -60,7 +60,7 @@ const UpdateCategoryForm = ({
   // confirm modal hook
   const [ConfirmDialog, confirm] = useConfirm(
     "Are you sure?",
-    "You are about to delete this billboard",
+    "You are about to delete this category",
   );
   // init loading state
   const isLoading = mutation.isPending || deleteMutation.isPending;

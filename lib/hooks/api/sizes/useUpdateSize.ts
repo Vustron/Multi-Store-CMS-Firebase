@@ -22,11 +22,9 @@ export const useUpdateSize = (storeId?: string, sizeId?: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["stores", storeId, "sizes", sizeId],
+        queryKey: ["sizes", storeId, sizeId],
       });
-      queryClient.invalidateQueries({
-        queryKey: ["stores", storeId],
-      });
+
       router.replace(`/${storeId}/sizes`);
     },
   });

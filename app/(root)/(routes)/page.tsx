@@ -1,18 +1,13 @@
-"use client";
-
-import { useStoreModal } from "@/lib/hooks/modals/useStoreModal";
-import { useEffect } from "react";
+import Setup from "@/components/setup/setup";
+import { auth } from "@clerk/nextjs/server";
 
 export default function SetupPage() {
-  // init use modal hook
-  const onOpen = useStoreModal((state) => state.onOpen);
-  const isOpen = useStoreModal((state) => state.isOpen);
+  // get user id
+  const { userId } = auth();
 
-  useEffect(() => {
-    if (!isOpen) {
-      onOpen();
-    }
-  }, [isOpen, onOpen]);
-
-  return <div></div>;
+  return (
+    <>
+      <Setup userId={userId} />
+    </>
+  );
 }

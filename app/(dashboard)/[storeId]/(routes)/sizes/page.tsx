@@ -4,7 +4,6 @@ import { useGetSizes } from "@/lib/hooks/api/sizes/useGetSizes";
 import { SizeColumns } from "./columns";
 import SizesClient from "./client";
 import { format } from "date-fns";
-import { useEffect } from "react";
 
 interface Props {
   params: {
@@ -15,20 +14,12 @@ interface Props {
 export default function SizesPage({ params }: Props) {
   // get category
   const sizes = useGetSizes({ params });
-
-  // Refetch data when component mounts
-  useEffect(() => {
-    sizes.refetch();
-  }, [sizes.refetch]);
-
   // set data
   const data = sizes.data || [];
-  // init loading state
-  const isLoading = sizes.isLoading;
-
-  if (isLoading) {
-    return <>...fetching sizes</>;
-  }
+  // loading state
+  const loading = sizes.isLoading;
+  // error state
+  const error = sizes.error;
 
   const formattedData: SizeColumns[] = data.map((item) => ({
     id: item.id,
@@ -42,7 +33,13 @@ export default function SizesPage({ params }: Props) {
   return (
     <div className="flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
-        <SizesClient data={formattedData} storeId={params.storeId} />
+        {loading ? (
+          <span>...loading sizes</span>
+        ) : error ? (
+          <span>Something went wrong {error.message}</span>
+        ) : (
+          <SizesClient data={formattedData} storeId={params.storeId} />
+        )}
       </div>
     </div>
   );

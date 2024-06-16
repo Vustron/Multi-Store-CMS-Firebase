@@ -16,7 +16,7 @@ const fetchCuisine = async (storeId: string, cuisineId: string) => {
 
 export const useGetCuisineById = (storeId: string, cuisineId: string) => {
   return useQuery({
-    queryKey: ["stores", storeId, "cuisines", cuisineId],
+    queryKey: ["cuisines", storeId, cuisineId],
     queryFn: async () => fetchCuisine(storeId, cuisineId),
   });
 };

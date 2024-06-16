@@ -16,7 +16,7 @@ const fetchBillboard = async (storeId: string, billboardId: string) => {
 
 export const useGetBillboardById = (storeId: string, billboardId: string) => {
   return useQuery({
-    queryKey: ["stores", storeId, "billboards", billboardId],
+    queryKey: ["billboards", storeId, billboardId],
     queryFn: async () => fetchBillboard(storeId, billboardId),
   });
 };

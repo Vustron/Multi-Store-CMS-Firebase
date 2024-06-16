@@ -12,18 +12,21 @@ export default function BillboardIdPage({
   const billboard = useGetBillboardById(params.storeId, params.billboardId);
   // set data
   const data = billboard.data;
-  // init loading
-  const isLoading = billboard.isLoading;
-
   // loading state
-  if (isLoading) {
-    return <>...fetching billboard</>;
-  }
+  const loading = billboard.isLoading;
+  // error state
+  const error = billboard.error;
 
   return (
     <div className="flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
-        <UpdateBillboardForm storeId={params.storeId} initialData={data} />
+        {loading ? (
+          <span>...loading billboard</span>
+        ) : error ? (
+          <span>Something went wrong {error.message}</span>
+        ) : (
+          <UpdateBillboardForm storeId={params.storeId} initialData={data} />
+        )}
       </div>
     </div>
   );

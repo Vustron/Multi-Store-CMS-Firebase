@@ -2,7 +2,6 @@
 
 import { useGetCuisineById } from "@/lib/hooks/api/cuisines/useGetCuisineById";
 import UpdateCuisineForm from "@/components/forms/UpdateCuisineForm";
-import { useEffect } from "react";
 
 export default function CuisineIdPage({
   params,
@@ -11,26 +10,22 @@ export default function CuisineIdPage({
 }) {
   // get cuisine using id
   const cuisine = useGetCuisineById(params.storeId, params.cuisineId);
-
-  // Refetch data when component mounts
-  useEffect(() => {
-    cuisine.refetch();
-  }, [cuisine.refetch]);
-
-  // set data
   const data = cuisine.data;
-  // init loading
-  const isLoading = cuisine.isLoading;
-
   // loading state
-  if (isLoading) {
-    return <>...fetching data</>;
-  }
+  const loading = cuisine.isLoading;
+  // error state
+  const error = cuisine.error;
 
   return (
     <div className="flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
-        <UpdateCuisineForm storeId={params.storeId} initialData={data} />
+        {loading ? (
+          <span>...loading cuisine</span>
+        ) : error ? (
+          <span>Something went wrong {error.message}</span>
+        ) : (
+          <UpdateCuisineForm storeId={params.storeId} initialData={data} />
+        )}
       </div>
     </div>
   );

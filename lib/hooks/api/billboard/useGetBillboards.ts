@@ -13,7 +13,7 @@ export const useGetBillboards = ({
   };
 }) => {
   const query = useQuery({
-    queryKey: ["stores", params.storeId],
+    queryKey: ["billboards", params.storeId],
     enabled: !!params.storeId,
     queryFn: async () => {
       const billboards = (

@@ -1,8 +1,9 @@
 "use client";
 
-import { useGetBillboards } from "@/lib/hooks/api/billboard/useGetBillboard";
+import { useGetBillboards } from "@/lib/hooks/api/billboard/useGetBillboards";
 import CreateCategoryForm from "@/components/forms/CreateCategoryForm";
-import { useEffect } from "react";
+import { Separator } from "@/components/ui/Separator";
+import Heading from "@/components/shared/Heading";
 
 export default function CategoryPage({
   params,
@@ -11,23 +12,32 @@ export default function CategoryPage({
 }) {
   // get billboard
   const billboard = useGetBillboards({ params });
-  // Refetch data when component mounts
-  useEffect(() => {
-    billboard.refetch();
-  }, [billboard.refetch]);
   // set data
   const data = billboard.data || [];
-  // init loading state
-  const isLoading = billboard.isLoading;
-
-  if (isLoading) {
-    return <>...fetching data</>;
-  }
+  // loading state
+  const loading = billboard.isLoading;
+  // error state
+  const error = billboard.error;
 
   return (
     <div className="flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
-        <CreateCategoryForm storeId={params.storeId} billboards={data} />
+        <div className="flex items-center justify-between">
+          <Heading
+            title={"Create a new category"}
+            description="Create categories for your store"
+          />
+        </div>
+
+        <Separator />
+
+        {loading ? (
+          <span>...loading categories</span>
+        ) : error ? (
+          <span>Something went wrong {error.message}</span>
+        ) : (
+          <CreateCategoryForm storeId={params.storeId} billboards={data} />
+        )}
       </div>
     </div>
   );

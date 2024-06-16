@@ -22,7 +22,7 @@ export const useCreateCategory = (storeId?: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["stores", storeId],
+        queryKey: ["categories", storeId],
       });
       router.replace(`/${storeId}/categories`);
     },

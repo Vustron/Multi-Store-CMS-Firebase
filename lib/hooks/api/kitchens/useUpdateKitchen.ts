@@ -22,11 +22,9 @@ export const useUpdateKitchen = (storeId?: string, kitchenId?: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["stores", storeId, "kitchens", kitchenId],
+        queryKey: ["kitchens", storeId, kitchenId],
       });
-      queryClient.invalidateQueries({
-        queryKey: ["stores", storeId],
-      });
+
       router.replace(`/${storeId}/kitchens`);
     },
   });

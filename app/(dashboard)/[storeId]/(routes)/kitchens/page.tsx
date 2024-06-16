@@ -4,7 +4,6 @@ import { useGetKitchens } from "@/lib/hooks/api/kitchens/useGetKitchens";
 import { KitchenColumns } from "./columns";
 import KitchensClient from "./client";
 import { format } from "date-fns";
-import { useEffect } from "react";
 
 interface Props {
   params: {
@@ -13,22 +12,13 @@ interface Props {
 }
 
 export default function KitchensPage({ params }: Props) {
-  // get category
+  // get kitchens
   const kitchens = useGetKitchens({ params });
-
-  // Refetch data when component mounts
-  useEffect(() => {
-    kitchens.refetch();
-  }, [kitchens.refetch]);
-
   // set data
   const data = kitchens.data || [];
-  // init loading state
-  const isLoading = kitchens.isLoading;
-
-  if (isLoading) {
-    return <>...fetching kitchens</>;
-  }
+  const loading = kitchens.isLoading;
+  // error state
+  const error = kitchens.error;
 
   const formattedData: KitchenColumns[] = data.map((item) => ({
     id: item.id,
@@ -42,7 +32,13 @@ export default function KitchensPage({ params }: Props) {
   return (
     <div className="flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
-        <KitchensClient data={formattedData} storeId={params.storeId} />
+        {loading ? (
+          <span>...loading kitchens</span>
+        ) : error ? (
+          <span>Something went wrong {error.message}</span>
+        ) : (
+          <KitchensClient data={formattedData} storeId={params.storeId} />
+        )}
       </div>
     </div>
   );

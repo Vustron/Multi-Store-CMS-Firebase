@@ -5,6 +5,9 @@ import {
   serverTimestamp,
   updateDoc,
   getDoc,
+  getDocs,
+  query,
+  where,
 } from "firebase/firestore";
 
 import { NextResponse, NextRequest } from "next/server";
@@ -72,17 +75,17 @@ export async function POST(request: NextRequest) {
 }
 
 // get all stores handler
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { storeId: string } },
-) {
+export async function GET(request: NextRequest) {
   try {
+    const body = await request.json();
+    const { userId } = body;
+
     // if there's no userId throw an error
-    if (!params.storeId) {
-      return NextResponse.json("Store ID is missing", { status: 400 });
+    if (!body.userId) {
+      return NextResponse.json("User ID is missing", { status: 400 });
     }
     // get redis cache
-    const cacheKey = `stores_${params.storeId}`;
+    const cacheKey = `stores_${userId}`;
     const cachedStores = await redis.get(cacheKey);
 
     if (cachedStores) {
@@ -90,9 +93,15 @@ export async function GET(
     }
 
     // get store if no redis cache
-    const stores = (
-      await getDoc(doc(db, "stores", params.storeId))
-    ).data() as Store;
+    const storeSnap = await getDocs(
+      query(collection(db, "stores"), where("userId", "==", body.userId)),
+    );
+
+    const stores: Store[] = [];
+
+    storeSnap.forEach((doc) => {
+      stores.push(doc.data() as Store);
+    });
 
     if (stores) {
       // set the new stores data into redis cache

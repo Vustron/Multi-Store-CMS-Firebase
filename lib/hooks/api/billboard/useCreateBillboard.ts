@@ -22,7 +22,7 @@ export const useCreateBillboard = (storeId?: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["stores", storeId],
+        queryKey: ["billboards", storeId],
       });
 
       router.replace(`/${storeId}/billboards`);

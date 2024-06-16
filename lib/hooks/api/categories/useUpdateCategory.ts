@@ -22,11 +22,9 @@ export const useUpdateCategory = (storeId?: string, categoryId?: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["stores", storeId, "categories", categoryId],
+        queryKey: ["categories", storeId, categoryId],
       });
-      queryClient.invalidateQueries({
-        queryKey: ["stores", storeId],
-      });
+
       router.replace(`/${storeId}/categories`);
     },
   });

@@ -18,8 +18,8 @@ export const useUpdateStore = (storeId?: string) => {
       return data;
     },
     onSuccess: (data: any) => {
-      queryClient.invalidateQueries({ queryKey: ["stores", { storeId }] });
-      queryClient.invalidateQueries({ queryKey: ["stores"] });
+      queryClient.invalidateQueries({ queryKey: ["stores", storeId] });
+
       router.replace(`/${data?.id}`);
       // window.location.assign(`/${data?.id}`);
     },

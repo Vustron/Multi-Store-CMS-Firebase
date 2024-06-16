@@ -4,7 +4,6 @@ import { doc, getDocs, collection } from "firebase/firestore";
 import { useQuery } from "@tanstack/react-query";
 import { Category } from "@/lib/helpers/types";
 import { db } from "@/lib/services/firebase";
-import axios from "axios";
 
 export const useGetCategories = ({
   params,
@@ -14,7 +13,7 @@ export const useGetCategories = ({
   };
 }) => {
   const query = useQuery({
-    queryKey: ["stores", params.storeId],
+    queryKey: ["categories", params.storeId],
     enabled: !!params.storeId,
     queryFn: async () => {
       const categories = (

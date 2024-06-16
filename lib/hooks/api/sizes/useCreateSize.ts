@@ -19,7 +19,7 @@ export const useCreateSize = (storeId?: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["stores", storeId],
+        queryKey: ["sizes", storeId],
       });
       router.replace(`/${storeId}/sizes`);
     },

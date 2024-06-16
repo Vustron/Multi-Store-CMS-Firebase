@@ -22,8 +22,9 @@ export const useCreateCuisine = (storeId?: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["stores", storeId],
+        queryKey: ["cuisines", storeId],
       });
+
       router.replace(`/${storeId}/cuisines`);
     },
   });
