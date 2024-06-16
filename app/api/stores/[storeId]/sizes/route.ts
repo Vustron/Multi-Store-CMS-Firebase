@@ -88,7 +88,7 @@ export async function POST(
     sizes.push(size);
 
     // Save the updated sizes list back to Redis
-    await redis.set(cacheKey, JSON.stringify(sizes), "EX", 3600);
+    await redis.set(cacheKey, JSON.stringify(sizes));
 
     return NextResponse.json(size, { status: 200 });
   } catch (error) {

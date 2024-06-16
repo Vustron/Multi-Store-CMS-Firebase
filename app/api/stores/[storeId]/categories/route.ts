@@ -91,7 +91,7 @@ export async function POST(
     categories.push(category);
 
     // Save the updated categories list back to Redis
-    await redis.set(cacheKey, JSON.stringify(categories), "EX", 3600);
+    await redis.set(cacheKey, JSON.stringify(categories));
 
     return NextResponse.json(category, { status: 200 });
   } catch (error) {

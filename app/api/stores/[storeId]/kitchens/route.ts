@@ -9,9 +9,9 @@ import {
 } from "firebase/firestore";
 
 import { NextResponse, NextRequest } from "next/server";
+import { Kitchen } from "@/lib/helpers/types";
 import { db } from "@/lib/services/firebase";
 import { auth } from "@clerk/nextjs/server";
-import { Kitchen, Size } from "@/lib/helpers/types";
 import redis from "@/lib/services/redis";
 
 // create new kitchen handler
@@ -88,7 +88,7 @@ export async function POST(
     kitchens.push(kitchen);
 
     // Save the updated kitchens list back to Redis
-    await redis.set(cacheKey, JSON.stringify(kitchens), "EX", 3600);
+    await redis.set(cacheKey, JSON.stringify(kitchens));
 
     return NextResponse.json(kitchen, { status: 200 });
   } catch (error) {

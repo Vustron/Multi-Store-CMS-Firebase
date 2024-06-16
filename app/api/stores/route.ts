@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     stores.push(store);
 
     // Save the updated stores list back to Redis
-    await redis.set(cacheKey, JSON.stringify(stores), "EX", 3600);
+    await redis.set(cacheKey, JSON.stringify(stores));
 
     return NextResponse.json(store, { status: 200 });
   } catch (error) {
@@ -75,17 +75,17 @@ export async function POST(request: NextRequest) {
 }
 
 // get all stores handler
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { storeId: string } },
+) {
   try {
-    const body = await request.json();
-    const { userId } = body;
-
-    // if there's no userId throw an error
-    if (!body.userId) {
-      return NextResponse.json("User ID is missing", { status: 400 });
+    // throw error if no store id
+    if (!params.storeId) {
+      return NextResponse.json("Store id is missing", { status: 400 });
     }
     // get redis cache
-    const cacheKey = `stores_${userId}`;
+    const cacheKey = `stores_${params.storeId}`;
     const cachedStores = await redis.get(cacheKey);
 
     if (cachedStores) {
@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
 
     // get store if no redis cache
     const storeSnap = await getDocs(
-      query(collection(db, "stores"), where("userId", "==", body.userId)),
+      query(collection(db, "stores"), where("userId", "==", params.storeId)),
     );
 
     const stores: Store[] = [];

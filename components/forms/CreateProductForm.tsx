@@ -3,6 +3,7 @@
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -19,9 +20,11 @@ import {
 
 import { useCreateProduct } from "@/lib/hooks/api/products/useCreateProduct";
 import { Category, Cuisine, Kitchen, Size } from "@/lib/helpers/types";
+import ImagesUpload from "@/components/shared/ImagesUpload";
 import { zodResolver } from "@hookform/resolvers/zod";
 import PriceInput from "@/components/ui/PriceInput";
 import { Button } from "@/components/ui//Button";
+import { Switch } from "@/components/ui/Switch";
 import { Input } from "@/components/ui/Input";
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
@@ -78,6 +81,13 @@ const CreateProductForm = ({
     defaultValues: {
       name: "",
       price: 0,
+      images: [],
+      isFeatured: false,
+      isArchived: false,
+      category: "",
+      size: "",
+      kitchen: "",
+      cuisine: "",
     },
   });
 
@@ -98,6 +108,32 @@ const CreateProductForm = ({
           onSubmit={form.handleSubmit(onSubmit)}
           className="w-full space-y-8"
         >
+          {/* images */}
+          {/* Name */}
+          <FormField
+            name="images"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Product Image</FormLabel>
+                <FormControl>
+                  <ImagesUpload
+                    value={field.value.map((image) => image.url)}
+                    onChange={(urls: string[]) => {
+                      field.onChange(urls.map((url: string) => ({ url })));
+                    }}
+                    onRemove={(url: string) => {
+                      field.onChange(
+                        field.value.filter((current) => current.url !== url),
+                      );
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <div className="grid grid-cols-3 gap-8">
             {/* name */}
             <FormField
@@ -205,6 +241,134 @@ const CreateProductForm = ({
                       ))}
                     </SelectContent>
                   </Select>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Kitchens */}
+            <FormField
+              name="kitchen"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Kitchen</FormLabel>
+
+                  <Select
+                    disabled={isLoading}
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue
+                          defaultValue={field.value}
+                          placeholder="Select a kitchen"
+                        />
+                      </SelectTrigger>
+                    </FormControl>
+
+                    <SelectContent>
+                      {kitchens.map((kitchen) => (
+                        <SelectItem key={kitchen.id} value={kitchen.id}>
+                          {kitchen.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Cuisines */}
+            <FormField
+              name="cuisine"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cuisine</FormLabel>
+
+                  <Select
+                    disabled={isLoading}
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue
+                          defaultValue={field.value}
+                          placeholder="Select a cuisine"
+                        />
+                      </SelectTrigger>
+                    </FormControl>
+
+                    <SelectContent>
+                      {cuisines.map((cuisine) => (
+                        <SelectItem key={cuisine.id} value={cuisine.id}>
+                          {cuisine.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Featured */}
+            <FormField
+              name="isFeatured"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-3">
+                  <FormControl>
+                    <Switch
+                      disabled={isLoading}
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Featured</FormLabel>
+                    <FormDescription>
+                      This product will be on home screen under featured
+                      products
+                    </FormDescription>
+                  </div>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Archived */}
+            <FormField
+              name="isArchived"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-3">
+                  <FormControl>
+                    <Switch
+                      disabled={isLoading}
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Archive</FormLabel>
+                    <FormDescription>
+                      This product will not be displayed anywhere inside the
+                      store
+                    </FormDescription>
+                  </div>
 
                   <FormMessage />
                 </FormItem>

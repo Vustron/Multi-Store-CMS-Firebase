@@ -51,7 +51,7 @@ export async function PATCH(
     }
 
     // Save the updated stores list back to Redis
-    await redis.set(cacheKey, JSON.stringify(stores), "EX", 3600);
+    await redis.set(cacheKey, JSON.stringify(stores));
 
     return NextResponse.json(updatedStore, { status: 200 });
   } catch (error) {

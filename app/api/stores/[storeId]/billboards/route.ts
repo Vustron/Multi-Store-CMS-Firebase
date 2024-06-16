@@ -87,7 +87,7 @@ export async function POST(
     billboards.push(billboard);
 
     // Save the updated billboards list back to Redis
-    await redis.set(cacheKey, JSON.stringify(billboards), "EX", 3600);
+    await redis.set(cacheKey, JSON.stringify(billboards));
 
     return NextResponse.json(billboard, { status: 200 });
   } catch (error) {
