@@ -4,42 +4,53 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/Button";
 import { ArrowUpDown } from "lucide-react";
 import SizeActions from "./action";
+import OrdersImage from "@/components/shared/OrdersImage";
 
-export type SizeColumns = {
+export type OrderColumns = {
   id: string;
-  name: string;
-  value: string;
+  phone: string;
+  address: string;
+  products: string;
+  totalPrice: string;
+  images: string[];
+  isPaid: boolean;
   createdAt: string;
+  order_status: string;
 };
 
-export const columns: ColumnDef<SizeColumns>[] = [
+export const columns: ColumnDef<OrderColumns>[] = [
   {
-    accessorKey: "name",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Name
-          <ArrowUpDown className="ml-2 size-4" />
-        </Button>
-      );
+    accessorKey: "images",
+    header: "Images",
+    cell: ({ row }) => {
+      <div className="grid grid-cols-2 gap-2">
+        <OrdersImage data={row.original.images} />
+      </div>;
     },
   },
   {
-    accessorKey: "value",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Value
-          <ArrowUpDown className="ml-2 size-4" />
-        </Button>
-      );
-    },
+    accessorKey: "products",
+    header: "Products",
+  },
+  {
+    accessorKey: "string",
+    header: "Phone",
+  },
+  {
+    accessorKey: "address",
+    header: "Address",
+  },
+  {
+    accessorKey: "totalPrice",
+    header: "Amount",
+  },
+  {
+    accessorKey: "isPaid",
+    header: "Payment Status",
+  },
+  {
+    accessorKey: "products",
+    header: "Products",
   },
   {
     accessorKey: "createdAt",

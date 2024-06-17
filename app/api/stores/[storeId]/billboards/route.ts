@@ -87,7 +87,7 @@ export async function POST(
     billboards.push(billboard);
 
     // Save the updated billboards list back to Redis
-    await redis.set(cacheKey, JSON.stringify(billboards));
+    await redis.set(cacheKey, JSON.stringify(billboards), "EX", 3600);
 
     return NextResponse.json(billboard, { status: 200 });
   } catch (error) {
@@ -123,7 +123,7 @@ export async function GET(
     ).docs.map((doc) => doc.data()) as Billboard[];
 
     if (billboards) {
-      await redis.set(cacheKey, JSON.stringify(billboards));
+      await redis.set(cacheKey, JSON.stringify(billboards), "EX", 3600);
       return NextResponse.json(billboards, { status: 200 });
     } else {
       return NextResponse.json("Billboards not found", { status: 404 });

@@ -88,7 +88,7 @@ export async function POST(
     cuisines.push(cuisine);
 
     // Save the updated cuisines list back to Redis
-    await redis.set(cacheKey, JSON.stringify(cuisines));
+    await redis.set(cacheKey, JSON.stringify(cuisines), "EX", 3600);
 
     return NextResponse.json(cuisine, { status: 200 });
   } catch (error) {
@@ -122,7 +122,7 @@ export async function GET(
     ).docs.map((doc) => doc.data()) as Cuisine[];
 
     if (cuisines) {
-      await redis.set(cacheKey, JSON.stringify(cuisines));
+      await redis.set(cacheKey, JSON.stringify(cuisines), "EX", 3600);
       return NextResponse.json(cuisines, { status: 200 });
     } else {
       return NextResponse.json("Cuisines not found", { status: 404 });

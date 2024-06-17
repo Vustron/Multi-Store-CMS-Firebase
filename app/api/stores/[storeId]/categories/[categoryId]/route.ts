@@ -102,7 +102,7 @@ export async function PATCH(
     }
 
     // Save the updated categories list back to Redis
-    await redis.set(cacheKey, JSON.stringify(categories));
+    await redis.set(cacheKey, JSON.stringify(categories), "EX", 3600);
 
     return NextResponse.json(categorySize, { status: 200 });
   } catch (error) {

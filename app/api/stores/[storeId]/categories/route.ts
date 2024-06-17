@@ -91,7 +91,7 @@ export async function POST(
     categories.push(category);
 
     // Save the updated categories list back to Redis
-    await redis.set(cacheKey, JSON.stringify(categories));
+    await redis.set(cacheKey, JSON.stringify(categories), "EX", 3600);
 
     return NextResponse.json(category, { status: 200 });
   } catch (error) {
@@ -125,7 +125,7 @@ export async function GET(
     ).docs.map((doc) => doc.data()) as Category[];
 
     if (categories) {
-      await redis.set(cacheKey, JSON.stringify(categories));
+      await redis.set(cacheKey, JSON.stringify(categories), "EX", 3600);
       return NextResponse.json(categories, { status: 200 });
     } else {
       return NextResponse.json("Categories not found", { status: 404 });

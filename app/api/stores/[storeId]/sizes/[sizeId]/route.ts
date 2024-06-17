@@ -96,7 +96,7 @@ export async function PATCH(
     }
 
     // Save the updated sizes list back to Redis
-    await redis.set(cacheKey, JSON.stringify(sizes));
+    await redis.set(cacheKey, JSON.stringify(sizes), "EX", 3600);
 
     return NextResponse.json(updatedSize, { status: 200 });
   } catch (error) {

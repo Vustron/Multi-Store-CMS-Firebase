@@ -45,18 +45,15 @@ export const UpdateCategoryFormSchema = z.object({
     .string()
     .min(3, { message: "Category name must be at least three characters." })
     .max(50, { message: "Category name must be less than 50 characters." })
-    .regex(urlPattern, { message: "Invalid URL format." })
     .refine(noSqlInjection, { message: "Invalid characters detected." }),
   billboardId: z
     .string()
     .min(1, { message: "Billboard ID is required." })
     .max(50, { message: "Billboard ID must be less than 50 characters." })
-    .regex(urlPattern, { message: "Invalid URL format." })
     .refine(noSqlInjection, { message: "Invalid characters detected." }),
   billboardLabel: z
     .string()
     .max(50, { message: "Billboard label must be less than 50 characters." })
-    .regex(urlPattern, { message: "Invalid URL format." })
     .refine(noSqlInjection, { message: "Invalid characters detected." })
     .optional(),
 });

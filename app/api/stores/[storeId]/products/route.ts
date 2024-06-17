@@ -6,6 +6,10 @@ import {
   serverTimestamp,
   updateDoc,
   getDoc,
+  where,
+  QueryConstraint,
+  query,
+  and,
 } from "firebase/firestore";
 
 import { NextResponse, NextRequest } from "next/server";
@@ -108,7 +112,7 @@ export async function POST(
     products.push(product);
 
     // Save the updated products list back to Redis
-    await redis.set(cacheKey, JSON.stringify(products));
+    await redis.set(cacheKey, JSON.stringify(products), "EX", 3600);
 
     return NextResponse.json({ id, ...productData }, { status: 200 });
   } catch (error) {
@@ -121,32 +125,99 @@ export async function POST(
 
 // get product handler
 export async function GET(
-  request: NextRequest,
+  request: Request,
   { params }: { params: { storeId: string } },
 ) {
   try {
-    // if there's no userId throw an error
+    // if there's no storeId throw an error
     if (!params.storeId) {
       return NextResponse.json("Store ID is missing", { status: 400 });
     }
-    // get redis cache
-    const cacheKey = `products_${params.storeId}`;
-    const cachedProduct = await redis.get(cacheKey);
 
-    if (cachedProduct) {
-      return NextResponse.json(JSON.parse(cachedProduct), { status: 200 });
+    // get search params
+    const { searchParams } = new URL(request.url);
+    const hasSearchParams = searchParams.toString() !== "";
+
+    // construct a unique cache key
+    const baseCacheKey = `products_${params.storeId}`;
+    const cacheKey = hasSearchParams
+      ? `${baseCacheKey}_${searchParams.toString()}`
+      : baseCacheKey;
+
+    // check if data exists in cache
+    const cachedData = await redis.get(cacheKey);
+    if (cachedData) {
+      return NextResponse.json(JSON.parse(cachedData), { status: 200 });
     }
-    // get products if no redis cache
-    const products = (
-      await getDocs(collection(doc(db, "stores", params.storeId), "products"))
-    ).docs.map((doc) => doc.data()) as Product[];
 
-    if (products) {
-      await redis.set(cacheKey, JSON.stringify(products));
-      return NextResponse.json(products, { status: 200 });
+    const productRef = collection(
+      doc(db, "stores", params.storeId),
+      "products",
+    );
+
+    let productQuery;
+    const queryConstraints = [];
+
+    // construct query based on the searchParams
+    if (searchParams.has("size")) {
+      queryConstraints.push(where("size", "==", searchParams.get("size")));
+    }
+
+    if (searchParams.has("category")) {
+      queryConstraints.push(
+        where("category", "==", searchParams.get("category")),
+      );
+    }
+
+    if (searchParams.has("kitchen")) {
+      queryConstraints.push(
+        where("kitchen", "==", searchParams.get("kitchen")),
+      );
+    }
+
+    if (searchParams.has("cuisine")) {
+      queryConstraints.push(
+        where("cuisine", "==", searchParams.get("cuisine")),
+      );
+    }
+
+    if (searchParams.has("isFeatured")) {
+      queryConstraints.push(
+        where(
+          "isFeatured",
+          "==",
+          searchParams.get("isFeatured") === "true" ? true : false,
+        ),
+      );
+    }
+
+    if (searchParams.has("isArchived")) {
+      queryConstraints.push(
+        where(
+          "isArchived",
+          "==",
+          searchParams.get("isArchived") === "true" ? true : false,
+        ),
+      );
+    }
+
+    if (queryConstraints.length > 0) {
+      productQuery = query(productRef, and(...queryConstraints));
     } else {
-      return NextResponse.json("Products not found", { status: 404 });
+      productQuery = query(productRef);
     }
+
+    // execute query
+    const querySnapshot = await getDocs(productQuery);
+
+    const productsData: Product[] = querySnapshot.docs.map((doc) =>
+      doc.data(),
+    ) as Product[];
+
+    // store the data in cache
+    await redis.set(cacheKey, JSON.stringify(productsData), "EX", 3600);
+
+    return NextResponse.json(productsData, { status: 200 });
   } catch (error) {
     console.log(`PRODUCTS_GET: ${error}`);
     return NextResponse.json("Internal Server Error", {

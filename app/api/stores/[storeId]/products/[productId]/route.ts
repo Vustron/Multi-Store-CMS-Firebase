@@ -118,7 +118,7 @@ export async function PATCH(
     }
 
     // Save the updated products list back to Redis
-    await redis.set(cacheKey, JSON.stringify(products));
+    await redis.set(cacheKey, JSON.stringify(products), "EX", 3600);
 
     return NextResponse.json(updatedProduct, { status: 200 });
   } catch (error) {
@@ -247,7 +247,7 @@ export async function GET(
     ).data() as Product;
 
     if (product) {
-      await redis.set(cacheKey, JSON.stringify(product));
+      await redis.set(cacheKey, JSON.stringify(product), "EX", 3600);
       return NextResponse.json(product, { status: 200 });
     } else {
       return NextResponse.json("Product not found", { status: 404 });

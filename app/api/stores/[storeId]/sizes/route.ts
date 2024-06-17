@@ -88,7 +88,7 @@ export async function POST(
     sizes.push(size);
 
     // Save the updated sizes list back to Redis
-    await redis.set(cacheKey, JSON.stringify(sizes));
+    await redis.set(cacheKey, JSON.stringify(sizes), "EX", 3600);
 
     return NextResponse.json(size, { status: 200 });
   } catch (error) {
@@ -122,7 +122,7 @@ export async function GET(
     ).docs.map((doc) => doc.data()) as Size[];
 
     if (sizes) {
-      await redis.set(cacheKey, JSON.stringify(sizes));
+      await redis.set(cacheKey, JSON.stringify(sizes), "EX", 3600);
       return NextResponse.json(sizes, { status: 200 });
     } else {
       return NextResponse.json("Sizes not found", { status: 404 });

@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/Form";
 
 import { useCreateKitchen } from "@/lib/hooks/api/kitchens/useCreateKitchen";
-import { noSqlInjection, urlPattern } from "@/lib/helpers/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { noSqlInjection } from "@/lib/helpers/utils";
 import { Button } from "@/components/ui//Button";
 import { Input } from "@/components/ui/Input";
 import { useForm } from "react-hook-form";
@@ -28,13 +28,11 @@ export const KitchenFormSchema = z.object({
     .string()
     .min(3, { message: "Kitchen name must be at least three characters." })
     .max(50, { message: "Kitchen name must be less than 50 characters." })
-    .regex(urlPattern, { message: "Invalid URL format." })
     .refine(noSqlInjection, { message: "Invalid characters detected." }),
   value: z
     .string()
     .min(1, { message: "Kitchen value must be at least one character." })
     .max(50, { message: "Kitchen value must be less than 50 characters." })
-    .regex(urlPattern, { message: "Invalid URL format." })
     .refine(noSqlInjection, { message: "Invalid characters detected." }),
 });
 

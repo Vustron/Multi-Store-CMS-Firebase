@@ -35,13 +35,11 @@ export const UpdateSizeFormSchema = z.object({
     .string()
     .min(3, { message: "Size name must be at least three characters." })
     .max(50, { message: "Size name must be less than 50 characters." })
-    .regex(urlPattern, { message: "Invalid URL format." })
     .refine(noSqlInjection, { message: "Invalid characters detected." }),
   value: z
     .string()
     .min(1, { message: "Size value must be at least one character." })
     .max(50, { message: "Size value must be less than 50 characters." })
-    .regex(urlPattern, { message: "Invalid URL format." })
     .refine(noSqlInjection, { message: "Invalid characters detected." }),
 });
 

@@ -1,8 +1,8 @@
 "use client";
 
 import { useGetSizes } from "@/lib/hooks/api/sizes/useGetSizes";
-import { SizeColumns } from "./columns";
-import SizesClient from "./client";
+import { OrderColumns } from "./columns";
+import OrdersClient from "./client";
 import { format } from "date-fns";
 
 interface Props {
@@ -11,7 +11,7 @@ interface Props {
   };
 }
 
-export default function SizesPage({ params }: Props) {
+export default function OrdersPage({ params }: Props) {
   // get category
   const sizes = useGetSizes({ params });
   // set data
@@ -21,7 +21,7 @@ export default function SizesPage({ params }: Props) {
   // error state
   const error = sizes.error;
 
-  const formattedData: SizeColumns[] = data.map((item) => ({
+  const formattedData: OrderColumns[] = data.map((item) => ({
     id: item.id,
     name: item.name,
     value: item.value,
@@ -34,11 +34,11 @@ export default function SizesPage({ params }: Props) {
     <div className="flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
         {loading ? (
-          <span>...loading sizes</span>
+          <span>...loading orders</span>
         ) : error ? (
           <span>Something went wrong {error.message}</span>
         ) : (
-          <SizesClient data={formattedData} storeId={params.storeId} />
+          <OrdersClient data={formattedData} storeId={params.storeId} />
         )}
       </div>
     </div>

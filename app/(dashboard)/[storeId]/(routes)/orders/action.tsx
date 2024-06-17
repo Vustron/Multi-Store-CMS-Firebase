@@ -14,11 +14,11 @@ import { Copy, MoreHorizontal, Trash, Pencil } from "lucide-react";
 import { useConfirm } from "@/lib/hooks/misc/useConfirm";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { SizeColumns } from "./columns";
+import { OrderColumns } from "./columns";
 import { toast } from "react-hot-toast";
 
 interface Props {
-  data: SizeColumns;
+  data: OrderColumns;
 }
 
 const SizeActions = ({ data }: Props) => {

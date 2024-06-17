@@ -98,7 +98,7 @@ export async function PATCH(
     }
 
     // Save the updated cuisines list back to Redis
-    await redis.set(cacheKey, JSON.stringify(cuisines));
+    await redis.set(cacheKey, JSON.stringify(cuisines), "EX", 3600);
 
     return NextResponse.json(updatedCuisine, { status: 200 });
   } catch (error) {

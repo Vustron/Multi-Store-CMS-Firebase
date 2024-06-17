@@ -46,7 +46,6 @@ export const UpdateProductFormSchema = z.object({
     .string()
     .min(3, { message: "Product name must be at least three characters." })
     .max(50, { message: "Product name must be less than 50 characters." })
-    .regex(urlPattern, { message: "Invalid URL format." })
     .refine(noSqlInjection, { message: "Invalid characters detected." }),
   price: z.coerce
     .number()
@@ -67,24 +66,20 @@ export const UpdateProductFormSchema = z.object({
     .string()
     .min(3, { message: "Category must be at least three characters." })
     .max(50, { message: "Category must be less than 50 characters." })
-    .regex(urlPattern, { message: "Invalid URL format." })
     .refine(noSqlInjection, { message: "Invalid characters detected." }),
   size: z
     .string()
     .max(50, { message: "Size must be less than 50 characters." })
-    .regex(urlPattern, { message: "Invalid URL format." })
     .refine(noSqlInjection, { message: "Invalid characters detected." })
     .optional(),
   cuisine: z
     .string()
     .max(50, { message: "Cuisine must be less than 50 characters." })
-    .regex(urlPattern, { message: "Invalid URL format." })
     .refine(noSqlInjection, { message: "Invalid characters detected." })
     .optional(),
   kitchen: z
     .string()
     .max(50, { message: "Kitchen must be less than 50 characters." })
-    .regex(urlPattern, { message: "Invalid URL format." })
     .refine(noSqlInjection, { message: "Invalid characters detected." })
     .optional(),
 });

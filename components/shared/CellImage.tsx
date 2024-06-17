@@ -10,11 +10,13 @@ const CellImage = ({ imageUrl }: Props) => {
   return (
     <div className="relative h-16 min-h-16 w-32 min-w-32 overflow-hidden rounded-md shadow-md">
       <Image
+        fill
         src={imageUrl}
         alt="Billboard Image"
-        loading="lazy"
         className="object-cover"
-        fill
+        loading="lazy"
+        blurDataURL="data:image/jpeg..."
+        placeholder="blur"
         sizes="(min-width: 808px) 50vw, 100vw"
       />
     </div>

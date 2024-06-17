@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     stores.push(store);
 
     // Save the updated stores list back to Redis
-    await redis.set(cacheKey, JSON.stringify(stores));
+    await redis.set(cacheKey, JSON.stringify(stores), "EX", 3600);
 
     return NextResponse.json(store, { status: 200 });
   } catch (error) {
@@ -105,7 +105,7 @@ export async function GET(
 
     if (stores) {
       // set the new stores data into redis cache
-      await redis.set(cacheKey, JSON.stringify(stores));
+      await redis.set(cacheKey, JSON.stringify(stores), "EX", 3600);
       return NextResponse.json(stores, { status: 200 });
     } else {
       return NextResponse.json("Stores not found", { status: 404 });

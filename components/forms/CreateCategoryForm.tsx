@@ -18,8 +18,8 @@ import {
 } from "@/components/ui/Select";
 
 import { useCreateCategory } from "@/lib/hooks/api/categories/useCreateCategory";
-import { noSqlInjection, urlPattern } from "@/lib/helpers/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { noSqlInjection } from "@/lib/helpers/utils";
 import { Button } from "@/components/ui//Button";
 import { Billboard } from "@/lib/helpers/types";
 import { Input } from "@/components/ui/Input";
@@ -38,18 +38,15 @@ export const CategoryFormSchema = z.object({
     .string()
     .min(3, { message: "Category name must be at least three characters." })
     .max(50, { message: "Category name must be less than 50 characters." })
-    .regex(urlPattern, { message: "Invalid URL format." })
     .refine(noSqlInjection, { message: "Invalid characters detected." }),
   billboardId: z
     .string()
     .min(1, { message: "Billboard ID is required." })
     .max(50, { message: "Billboard ID must be less than 50 characters." })
-    .regex(urlPattern, { message: "Invalid URL format." })
     .refine(noSqlInjection, { message: "Invalid characters detected." }),
   billboardLabel: z
     .string()
     .max(50, { message: "Billboard label must be less than 50 characters." })
-    .regex(urlPattern, { message: "Invalid URL format." })
     .refine(noSqlInjection, { message: "Invalid characters detected." })
     .optional(),
 });
