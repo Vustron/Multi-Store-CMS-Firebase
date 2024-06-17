@@ -2,6 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 import { ArrowUpDown } from "lucide-react";
 import ProductActions from "./action";
 
@@ -41,10 +42,30 @@ export const columns: ColumnDef<ProductColumns>[] = [
   {
     accessorKey: "isFeatured",
     header: "Featured",
+    cell: ({ row }) => {
+      return (
+        <Badge
+          variant={row.original.isFeatured ? "destructive" : "success"}
+          className="px-3.5 py-2.5 text-xs font-medium"
+        >
+          {row.original.isFeatured}
+        </Badge>
+      );
+    },
   },
   {
     accessorKey: "isArchived",
     header: "Archived",
+    cell: ({ row }) => {
+      return (
+        <Badge
+          variant={row.original.isArchived ? "destructive" : "success"}
+          className="px-3.5 py-2.5 text-xs font-medium"
+        >
+          {row.original.isArchived}
+        </Badge>
+      );
+    },
   },
   {
     accessorKey: "category",

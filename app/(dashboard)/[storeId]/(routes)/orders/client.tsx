@@ -5,9 +5,7 @@ import { Separator } from "@/components/ui/Separator";
 import { OrderColumns, columns } from "./columns";
 import Heading from "@/components/shared/Heading";
 import ApiList from "@/components/shared/ApiList";
-import { Button } from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
 
 interface Props {
   data: OrderColumns[];

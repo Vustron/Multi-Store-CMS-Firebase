@@ -1,10 +1,11 @@
 "use client";
 
+import OrdersImage from "@/components/shared/OrdersImage";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 import { ArrowUpDown } from "lucide-react";
 import SizeActions from "./action";
-import OrdersImage from "@/components/shared/OrdersImage";
 
 export type OrderColumns = {
   id: string;
@@ -14,8 +15,8 @@ export type OrderColumns = {
   totalPrice: string;
   images: string[];
   isPaid: boolean;
-  createdAt: string;
   order_status: string;
+  createdAt: string;
 };
 
 export const columns: ColumnDef<OrderColumns>[] = [
@@ -47,10 +48,30 @@ export const columns: ColumnDef<OrderColumns>[] = [
   {
     accessorKey: "isPaid",
     header: "Payment Status",
+    cell: ({ row }) => {
+      return (
+        <Badge
+          variant={row.original.isPaid ? "destructive" : "success"}
+          className="px-3.5 py-2.5 text-xs font-medium"
+        >
+          {row.original.isPaid}
+        </Badge>
+      );
+    },
   },
   {
-    accessorKey: "products",
-    header: "Products",
+    accessorKey: "order_status",
+    header: "Order Status",
+    cell: ({ row }) => {
+      return (
+        <Badge
+          variant={row.original.order_status ? "destructive" : "success"}
+          className="px-3.5 py-2.5 text-xs font-medium"
+        >
+          {row.original.order_status}
+        </Badge>
+      );
+    },
   },
   {
     accessorKey: "createdAt",

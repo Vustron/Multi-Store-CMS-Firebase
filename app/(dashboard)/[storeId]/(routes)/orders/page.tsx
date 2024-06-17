@@ -1,6 +1,7 @@
 "use client";
 
-import { useGetSizes } from "@/lib/hooks/api/sizes/useGetSizes";
+import { useGetOrders } from "@/lib/hooks/api/orders/useGetOrders";
+import { formatter } from "@/lib/helpers/utils";
 import { OrderColumns } from "./columns";
 import OrdersClient from "./client";
 import { format } from "date-fns";
@@ -12,19 +13,31 @@ interface Props {
 }
 
 export default function OrdersPage({ params }: Props) {
-  // get category
-  const sizes = useGetSizes({ params });
+  // get orders
+  const orders = useGetOrders({ params });
   // set data
-  const data = sizes.data || [];
+  const data = orders.data || [];
   // loading state
-  const loading = sizes.isLoading;
+  const loading = orders.isLoading;
   // error state
-  const error = sizes.error;
+  const error = orders.error;
 
   const formattedData: OrderColumns[] = data.map((item) => ({
     id: item.id,
-    name: item.name,
-    value: item.value,
+    isPaid: item.isPaid,
+    phone: item.phone,
+    address: item.address,
+    products: item.orderItems.map((item) => item.name).join(", "),
+    order_status: item.order_status,
+    totalPrice: formatter.format(
+      item.orderItems.reduce((total, item) => {
+        if (item && item.qty !== undefined) {
+          return total + Number(item.price * item.qty);
+        }
+        return total;
+      }, 0),
+    ),
+    images: item.orderItems.map((item) => item.images[0].url),
     createdAt: item.createdAt
       ? format(item.createdAt.toDate(), "MMMM dd yyyy")
       : "",

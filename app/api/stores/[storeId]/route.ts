@@ -227,7 +227,7 @@ export async function DELETE(
   }
 }
 
-// get stores by id handler
+// get store by id handler
 export async function GET(
   request: NextRequest,
   { params }: { params: { storeId: string } },
@@ -246,7 +246,7 @@ export async function GET(
       return NextResponse.json(JSON.parse(cachedStore), { status: 200 });
     }
 
-    // get store if no redis cache
+    // get stores if no redis cache
     const stores = (
       await getDoc(doc(db, "stores", params.storeId))
     ).data() as Store;

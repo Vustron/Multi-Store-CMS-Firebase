@@ -7,7 +7,6 @@ import {
   updateDoc,
   getDoc,
   where,
-  QueryConstraint,
   query,
   and,
 } from "firebase/firestore";
