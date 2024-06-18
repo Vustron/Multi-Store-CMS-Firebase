@@ -28,15 +28,16 @@ export async function POST(
     if (!userId) {
       return NextResponse.json("Unauthorized", { status: 401 });
     }
-    // throw error if no data
-    if (!body || !body.name || !body.billboardLabel || !body.billboardId) {
-      return NextResponse.json(
-        "Category Name or Billboard name or Billboard ID is missing",
-        {
+    // throw error if any required fields are missing
+    const requiredFields = ["name", "billboardLabel", "billboardId"];
+    for (const field of requiredFields) {
+      if (!body[field]) {
+        return NextResponse.json(`Category ${field} is missing`, {
           status: 400,
-        },
-      );
+        });
+      }
     }
+
     // throw error if no store id
     if (!params.storeId) {
       return NextResponse.json("Store ID is missing", {
@@ -108,31 +109,41 @@ export async function GET(
   { params }: { params: { storeId: string } },
 ) {
   try {
-    // if there's no userId throw an error
+    // if there's no storeId throw an error
     if (!params.storeId) {
-      return NextResponse.json("Store ID is missing", { status: 400 });
+      return new NextResponse("Store ID is missing", {
+        status: 400,
+      });
     }
+
     // get redis cache
     const cacheKey = `categories_${params.storeId}`;
     const cachedStore = await redis.get(cacheKey);
 
     if (cachedStore) {
-      return NextResponse.json(JSON.parse(cachedStore), { status: 200 });
+      return new NextResponse(JSON.stringify(JSON.parse(cachedStore)), {
+        status: 200,
+      });
     }
+
     // get categories if no redis cache
     const categories = (
       await getDocs(collection(doc(db, "stores", params.storeId), "categories"))
     ).docs.map((doc) => doc.data()) as Category[];
 
-    if (categories) {
+    if (categories.length > 0) {
       await redis.set(cacheKey, JSON.stringify(categories), "EX", 3600);
-      return NextResponse.json(categories, { status: 200 });
+      return new NextResponse(JSON.stringify(categories), {
+        status: 200,
+      });
     } else {
-      return NextResponse.json("Categories not found", { status: 404 });
+      return new NextResponse("No categories found", {
+        status: 404,
+      });
     }
   } catch (error) {
     console.log(`CATEGORIES_GET: ${error}`);
-    return NextResponse.json("Internal Server Error", {
+    return new NextResponse("Internal Server Error", {
       status: 500,
     });
   }

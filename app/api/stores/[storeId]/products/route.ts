@@ -130,7 +130,9 @@ export async function GET(
   try {
     // if there's no storeId throw an error
     if (!params.storeId) {
-      return NextResponse.json("Store ID is missing", { status: 400 });
+      return new NextResponse("Store ID is missing", {
+        status: 400,
+      });
     }
 
     // get search params
@@ -146,7 +148,9 @@ export async function GET(
     // check if data exists in cache
     const cachedData = await redis.get(cacheKey);
     if (cachedData) {
-      return NextResponse.json(JSON.parse(cachedData), { status: 200 });
+      return new NextResponse(JSON.stringify(JSON.parse(cachedData)), {
+        status: 200,
+      });
     }
 
     const productRef = collection(
@@ -216,10 +220,12 @@ export async function GET(
     // store the data in cache
     await redis.set(cacheKey, JSON.stringify(productsData), "EX", 3600);
 
-    return NextResponse.json(productsData, { status: 200 });
+    return new NextResponse(JSON.stringify(productsData), {
+      status: 200,
+    });
   } catch (error) {
     console.log(`PRODUCTS_GET: ${error}`);
-    return NextResponse.json("Internal Server Error", {
+    return new NextResponse("Internal Server Error", {
       status: 500,
     });
   }

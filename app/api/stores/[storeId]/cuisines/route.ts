@@ -101,7 +101,7 @@ export async function POST(
 
 // get cuisine handler
 export async function GET(
-  request: NextRequest,
+  request: Request,
   { params }: { params: { storeId: string } },
 ) {
   try {
@@ -114,18 +114,24 @@ export async function GET(
     const cachedCuisine = await redis.get(cacheKey);
 
     if (cachedCuisine) {
-      return NextResponse.json(JSON.parse(cachedCuisine), { status: 200 });
+      return new NextResponse(JSON.stringify(JSON.parse(cachedCuisine)), {
+        status: 200,
+      });
     }
     // get cuisines if no redis cache
     const cuisines = (
       await getDocs(collection(doc(db, "stores", params.storeId), "cuisines"))
     ).docs.map((doc) => doc.data()) as Cuisine[];
 
-    if (cuisines) {
+    if (cuisines.length > 0) {
       await redis.set(cacheKey, JSON.stringify(cuisines), "EX", 3600);
-      return NextResponse.json(cuisines, { status: 200 });
+      return new NextResponse(JSON.stringify(cuisines), {
+        status: 200,
+      });
     } else {
-      return NextResponse.json("Cuisines not found", { status: 404 });
+      return new NextResponse("Cuisines not found", {
+        status: 404,
+      });
     }
   } catch (error) {
     console.log(`CUISINES_GET: ${error}`);

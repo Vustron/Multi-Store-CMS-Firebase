@@ -101,35 +101,45 @@ export async function POST(
 
 // get size handler
 export async function GET(
-  request: NextRequest,
+  request: Request,
   { params }: { params: { storeId: string } },
 ) {
   try {
-    // if there's no userId throw an error
+    // if there's no storeId throw an error
     if (!params.storeId) {
-      return NextResponse.json("Store ID is missing", { status: 400 });
+      return new NextResponse("Store ID is missing", {
+        status: 400,
+      });
     }
+
     // get redis cache
     const cacheKey = `sizes_${params.storeId}`;
     const cachedSize = await redis.get(cacheKey);
 
     if (cachedSize) {
-      return NextResponse.json(JSON.parse(cachedSize), { status: 200 });
+      return new NextResponse(JSON.stringify(JSON.parse(cachedSize)), {
+        status: 200,
+      });
     }
+
     // get sizes if no redis cache
     const sizes = (
       await getDocs(collection(doc(db, "stores", params.storeId), "sizes"))
     ).docs.map((doc) => doc.data()) as Size[];
 
-    if (sizes) {
+    if (sizes.length > 0) {
       await redis.set(cacheKey, JSON.stringify(sizes), "EX", 3600);
-      return NextResponse.json(sizes, { status: 200 });
+      return new NextResponse(JSON.stringify(sizes), {
+        status: 200,
+      });
     } else {
-      return NextResponse.json("Sizes not found", { status: 404 });
+      return new NextResponse("Sizes not found", {
+        status: 404,
+      });
     }
   } catch (error) {
     console.log(`SIZES_GET: ${error}`);
-    return NextResponse.json("Internal Server Error", {
+    return new Response("Internal Server Error", {
       status: 500,
     });
   }

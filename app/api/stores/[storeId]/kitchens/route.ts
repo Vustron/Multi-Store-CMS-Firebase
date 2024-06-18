@@ -101,31 +101,40 @@ export async function POST(
 
 // get kitchen handler
 export async function GET(
-  request: NextRequest,
+  request: Request,
   { params }: { params: { storeId: string } },
 ) {
   try {
     // if there's no userId throw an error
     if (!params.storeId) {
-      return NextResponse.json("Store ID is missing", { status: 400 });
+      return new NextResponse("Store ID is missing", {
+        status: 400,
+      });
     }
     // get redis cache
     const cacheKey = `kitchens_${params.storeId}`;
     const cachedKitchen = await redis.get(cacheKey);
 
     if (cachedKitchen) {
-      return NextResponse.json(JSON.parse(cachedKitchen), { status: 200 });
+      return new NextResponse(JSON.stringify(JSON.parse(cachedKitchen)), {
+        status: 200,
+      });
     }
+
     // get kitchens if no redis cache
     const kitchens = (
       await getDocs(collection(doc(db, "stores", params.storeId), "kitchens"))
     ).docs.map((doc) => doc.data()) as Kitchen[];
 
-    if (kitchens) {
+    if (kitchens.length > 0) {
       await redis.set(cacheKey, JSON.stringify(kitchens), "EX", 3600);
-      return NextResponse.json(kitchens, { status: 200 });
+      return new NextResponse(JSON.stringify(kitchens), {
+        status: 200,
+      });
     } else {
-      return NextResponse.json("Kitchens not found", { status: 404 });
+      return new NextResponse("Kitchens not found", {
+        status: 404,
+      });
     }
   } catch (error) {
     console.log(`KITCHENS_GET: ${error}`);
