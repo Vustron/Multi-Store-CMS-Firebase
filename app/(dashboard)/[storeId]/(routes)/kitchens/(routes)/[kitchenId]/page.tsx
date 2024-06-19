@@ -2,6 +2,7 @@
 
 import { useGetKitchenById } from "@/lib/hooks/api/kitchens/useGetKitchenById";
 import UpdateKitchenForm from "@/components/forms/UpdateKitchenForm";
+import { Loader2 } from "lucide-react";
 
 export default function KitchenIdPage({
   params,
@@ -21,7 +22,9 @@ export default function KitchenIdPage({
     <div className="flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
         {loading ? (
-          <span>...loading kitchen</span>
+          <>
+            <Loader2 className="h-6 animate-spin" />
+          </>
         ) : error ? (
           <span>Something went wrong {error.message}</span>
         ) : (

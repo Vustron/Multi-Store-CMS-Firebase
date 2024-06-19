@@ -2,6 +2,7 @@
 
 import { useGetKitchens } from "@/lib/hooks/api/kitchens/useGetKitchens";
 import { KitchenColumns } from "./columns";
+import { Loader2 } from "lucide-react";
 import KitchensClient from "./client";
 import { format } from "date-fns";
 
@@ -33,7 +34,9 @@ export default function KitchensPage({ params }: Props) {
     <div className="flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
         {loading ? (
-          <span>...loading kitchens</span>
+          <>
+            <Loader2 className="h-6 animate-spin" />
+          </>
         ) : error ? (
           <span>Something went wrong {error.message}</span>
         ) : (

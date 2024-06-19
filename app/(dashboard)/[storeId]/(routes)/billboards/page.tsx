@@ -2,6 +2,7 @@
 
 import { useGetBillboards } from "@/lib/hooks/api/billboard/useGetBillboards";
 import { BillboardColumns } from "./columns";
+import { Loader2 } from "lucide-react";
 import BillboardClient from "./client";
 import { format } from "date-fns";
 
@@ -34,7 +35,9 @@ export default function BillboardsPage({ params }: Props) {
     <div className="flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
         {loading ? (
-          <span>...loading billboards</span>
+          <>
+            <Loader2 className="h-6 animate-spin" />
+          </>
         ) : error ? (
           <span>Something went wrong {error.message}</span>
         ) : (

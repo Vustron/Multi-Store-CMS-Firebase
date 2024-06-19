@@ -6,6 +6,7 @@ import { ApiAlert } from "@/components/shared/ApiALert";
 import { useOrigin } from "@/lib/hooks/misc/useOrigin";
 import { Separator } from "@/components/ui/Separator";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 interface Props {
   params: {
@@ -36,7 +37,9 @@ export default function SettingsPage({ params }: Props) {
     <div className="flex-col">
       <div className="flex-1 space-y-5 p-8 pt-6">
         {loading ? (
-          <span>...loading store</span>
+          <>
+            <Loader2 className="h-6 animate-spin" />
+          </>
         ) : error ? (
           <span>Something went wrong {error.message}</span>
         ) : (

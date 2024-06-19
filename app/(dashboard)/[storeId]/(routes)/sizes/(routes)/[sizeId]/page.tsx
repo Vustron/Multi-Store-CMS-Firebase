@@ -2,6 +2,7 @@
 
 import { useGetSizeById } from "@/lib/hooks/api/sizes/useGetSizeById";
 import UpdateSizeForm from "@/components/forms/UpdateSizeForm";
+import { Loader2 } from "lucide-react";
 
 export default function SizeIdPage({
   params,
@@ -19,7 +20,9 @@ export default function SizeIdPage({
     <div className="flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
         {loading ? (
-          <span>...loading store</span>
+          <>
+            <Loader2 className="h-6 animate-spin" />
+          </>
         ) : error ? (
           <span>Something went wrong {error.message}</span>
         ) : (

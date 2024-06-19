@@ -22,7 +22,9 @@ const Navbar = ({ userId, storeId }: { userId: string; storeId: string }) => {
       <div className="flex h-16 items-center px-4">
         {/* store switcher */}
         {loading ? (
-          <span>...loading stores</span>
+          <>
+            <Loader2 className="h-6 animate-spin" />
+          </>
         ) : error ? (
           <span>Something went wrong {error.message}</span>
         ) : (

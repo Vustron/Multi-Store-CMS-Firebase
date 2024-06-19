@@ -3,6 +3,7 @@
 import { useGetProducts } from "@/lib/hooks/api/products/useGetProducts";
 import { formatter } from "@/lib/helpers/utils";
 import { ProductColumns } from "./columns";
+import { Loader2 } from "lucide-react";
 import ProductsClient from "./client";
 import { format } from "date-fns";
 
@@ -44,7 +45,9 @@ export default function Products({ params }: Props) {
     <div className="flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
         {loading ? (
-          <span>...loading products</span>
+          <>
+            <Loader2 className="h-6 animate-spin" />
+          </>
         ) : error ? (
           <span>Something went wrong {error.message}</span>
         ) : (

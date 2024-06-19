@@ -2,6 +2,7 @@
 
 import { useGetSizes } from "@/lib/hooks/api/sizes/useGetSizes";
 import { SizeColumns } from "./columns";
+import { Loader2 } from "lucide-react";
 import SizesClient from "./client";
 import { format } from "date-fns";
 
@@ -34,7 +35,9 @@ export default function SizesPage({ params }: Props) {
     <div className="flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
         {loading ? (
-          <span>...loading sizes</span>
+          <>
+            <Loader2 className="h-6 animate-spin" />
+          </>
         ) : error ? (
           <span>Something went wrong {error.message}</span>
         ) : (

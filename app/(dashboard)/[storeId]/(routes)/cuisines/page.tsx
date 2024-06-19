@@ -2,6 +2,7 @@
 
 import { useGetCuisines } from "@/lib/hooks/api/cuisines/useGetCuisines";
 import { CuisineColumns } from "./columns";
+import { Loader2 } from "lucide-react";
 import CuisinesClient from "./client";
 import { format } from "date-fns";
 
@@ -34,7 +35,9 @@ export default function CuisinesPage({ params }: Props) {
     <div className="flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
         {loading ? (
-          <span>...loading cuisines</span>
+          <>
+            <Loader2 className="h-6 animate-spin" />
+          </>
         ) : error ? (
           <span>Something went wrong {error.message}</span>
         ) : (

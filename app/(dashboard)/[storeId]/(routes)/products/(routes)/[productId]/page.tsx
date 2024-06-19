@@ -4,11 +4,11 @@ import { useGetProductById } from "@/lib/hooks/api/products/useGetProductById";
 import { useGetCategories } from "@/lib/hooks/api/categories/useGetCategories";
 import { useGetCuisines } from "@/lib/hooks/api/cuisines/useGetCuisines";
 import { useGetKitchens } from "@/lib/hooks/api/kitchens/useGetKitchens";
+import UpdateProductForm from "@/components/forms/UpdateProductForm";
 import { useGetSizes } from "@/lib/hooks/api/sizes/useGetSizes";
-import UpdateSizeForm from "@/components/forms/UpdateSizeForm";
 import { Separator } from "@/components/ui/Separator";
 import Heading from "@/components/shared/Heading";
-import UpdateProductForm from "@/components/forms/UpdateProductForm";
+import { Loader2 } from "lucide-react";
 
 export default function ProductIdPage({
   params,
@@ -62,7 +62,9 @@ export default function ProductIdPage({
         <Separator />
 
         {loading ? (
-          <span>...loading product</span>
+          <>
+            <Loader2 className="h-6 animate-spin" />
+          </>
         ) : error ? (
           <span>Something went wrong {error.message}</span>
         ) : (

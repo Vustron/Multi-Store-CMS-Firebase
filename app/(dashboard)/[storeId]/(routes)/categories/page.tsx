@@ -3,6 +3,7 @@
 import { useGetCategories } from "@/lib/hooks/api/categories/useGetCategories";
 import { CategoryColumns } from "./columns";
 import CategoriesClient from "./client";
+import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
 
 interface Props {
@@ -34,7 +35,9 @@ export default function CategoriesPage({ params }: Props) {
     <div className="flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
         {loading ? (
-          <span>...loading categories</span>
+          <>
+            <Loader2 className="h-6 animate-spin" />
+          </>
         ) : error ? (
           <span>Something went wrong {error.message}</span>
         ) : (

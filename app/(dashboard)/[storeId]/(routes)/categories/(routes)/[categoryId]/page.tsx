@@ -3,6 +3,8 @@
 import { useGetCategoryById } from "@/lib/hooks/api//categories/useGetCategoryById";
 import { useGetBillboards } from "@/lib/hooks/api/billboard/useGetBillboards";
 import UpdateCategoryForm from "@/components/forms/UpdateCategoryForm";
+import { Loader2 } from "lucide-react";
+
 
 export default function CategoryIdPage({
   params,
@@ -25,7 +27,9 @@ export default function CategoryIdPage({
     <div className="flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
         {loading ? (
-          <span>...loading category</span>
+          <>
+            <Loader2 className="h-6 animate-spin" />
+          </>
         ) : error ? (
           <span>Something went wrong {error.message}</span>
         ) : (

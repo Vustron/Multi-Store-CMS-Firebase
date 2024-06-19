@@ -4,6 +4,7 @@ import { useGetBillboards } from "@/lib/hooks/api/billboard/useGetBillboards";
 import CreateCategoryForm from "@/components/forms/CreateCategoryForm";
 import { Separator } from "@/components/ui/Separator";
 import Heading from "@/components/shared/Heading";
+import { Loader2 } from "lucide-react";
 
 export default function CategoryPage({
   params,
@@ -32,7 +33,9 @@ export default function CategoryPage({
         <Separator />
 
         {loading ? (
-          <span>...loading categories</span>
+          <>
+            <Loader2 className="h-6 animate-spin" />
+          </>
         ) : error ? (
           <span>Something went wrong {error.message}</span>
         ) : (

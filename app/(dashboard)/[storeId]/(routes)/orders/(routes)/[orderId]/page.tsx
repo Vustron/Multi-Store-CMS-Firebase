@@ -3,6 +3,7 @@
 import { useGetOrderById } from "@/lib/hooks/api/orders/useGetOrderById";
 import UpdateOrderForm from "@/components/forms/UpdateOrderForm";
 import Heading from "@/components/shared/Heading";
+import { Loader2 } from "lucide-react";
 
 export default function SizeIdPage({
   params,
@@ -25,7 +26,9 @@ export default function SizeIdPage({
           />
         </div>
         {loading ? (
-          <span>...loading order</span>
+          <>
+            <Loader2 className="h-6 animate-spin" />
+          </>
         ) : error ? (
           <span>Something went wrong {error.message}</span>
         ) : (
