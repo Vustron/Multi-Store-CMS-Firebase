@@ -19,14 +19,31 @@ export type OrderColumns = {
   createdAt: string;
 };
 
+const getBadgeVariant = (status: string) => {
+  switch (status) {
+    case "Processing":
+      return "warning";
+    case "Delivering":
+      return "primary";
+    case "Delivered":
+      return "success";
+    case "Canceled":
+      return "destructive";
+    default:
+      return "default";
+  }
+};
+
 export const columns: ColumnDef<OrderColumns>[] = [
   {
     accessorKey: "images",
     header: "Images",
     cell: ({ row }) => {
-      <div className="grid grid-cols-2 gap-2">
-        <OrdersImage data={row.original.images} />
-      </div>;
+      return (
+        <div className="grid grid-cols-2 gap-2">
+          <OrdersImage data={row.original.images} />
+        </div>
+      );
     },
   },
   {
@@ -34,7 +51,7 @@ export const columns: ColumnDef<OrderColumns>[] = [
     header: "Products",
   },
   {
-    accessorKey: "string",
+    accessorKey: "phone",
     header: "Phone",
   },
   {
@@ -47,28 +64,29 @@ export const columns: ColumnDef<OrderColumns>[] = [
   },
   {
     accessorKey: "isPaid",
-    header: "Payment Status",
+    header: "Payment",
     cell: ({ row }) => {
       return (
         <Badge
-          variant={row.original.isPaid ? "destructive" : "success"}
-          className="px-3.5 py-2.5 text-xs font-medium"
+          variant={row.original.isPaid ? "success" : "destructive"}
+          className="text-md whitespace-nowrap font-medium"
         >
-          {row.original.isPaid}
+          {row.original.isPaid ? "Paid" : "Not Paid"}
         </Badge>
       );
     },
   },
   {
     accessorKey: "order_status",
-    header: "Order Status",
+    header: "Status",
     cell: ({ row }) => {
+      const status = row.original.order_status;
       return (
         <Badge
-          variant={row.original.order_status ? "destructive" : "success"}
-          className="px-3.5 py-2.5 text-xs font-medium"
+          variant={getBadgeVariant(status)}
+          className="text-md whitespace-nowrap font-medium"
         >
-          {row.original.order_status}
+          {status}
         </Badge>
       );
     },

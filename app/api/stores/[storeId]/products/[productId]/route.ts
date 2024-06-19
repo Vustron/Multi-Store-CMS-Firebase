@@ -232,11 +232,14 @@ export async function GET(
     }
 
     // get redis cache
-    const cacheKey = `products_${params.storeId}`;
+    const cacheKey = `product_${params.productId}`;
     const cachedProduct = await redis.get(cacheKey);
 
+    // check if data exists in cache
     if (cachedProduct) {
-      return NextResponse.json(JSON.parse(cachedProduct), { status: 200 });
+      return new NextResponse(JSON.stringify(JSON.parse(cachedProduct)), {
+        status: 200,
+      });
     }
 
     // get product
@@ -248,13 +251,15 @@ export async function GET(
 
     if (product) {
       await redis.set(cacheKey, JSON.stringify(product), "EX", 3600);
-      return NextResponse.json(product, { status: 200 });
+      return new NextResponse(JSON.stringify(product), { status: 200 });
     } else {
-      return NextResponse.json("Product not found", { status: 404 });
-    }
+      return new NextResponse(JSON.stringify("Product not found"), {
+        status: 404,
+      });
+    } 
   } catch (error) {
     console.log(`PRODUCT_ID_GET: ${error}`);
-    return NextResponse.json("Internal Server Error", {
+    return new NextResponse(JSON.stringify("Internal Server Error"), {
       status: 500,
     });
   }

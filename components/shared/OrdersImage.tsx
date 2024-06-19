@@ -12,17 +12,15 @@ const OrdersImage = ({ data }: Props) => {
       {data.map((url, index) => (
         <div
           key={index}
-          className="flex aspect-square size-16 min-h-16 min-w-16 items-center justify-center overflow-hidden rounded-md"
+          className="relative flex aspect-square h-16 w-16 items-center justify-center overflow-hidden rounded-md"
         >
           <Image
-            className="object-contain"
+            className="object-contain transition hover:scale-110"
             src={url}
-            alt="image"
+            alt={`Order Image ${index + 1}`}
             fill
             loading="lazy"
-            blurDataURL="data:image/jpeg..."
-            placeholder="blur"
-            sizes="(min-width: 808px) 50vw, 100vw"
+            sizes="100vw"
           />
         </div>
       ))}

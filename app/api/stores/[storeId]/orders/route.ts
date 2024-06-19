@@ -114,7 +114,7 @@ export async function POST(
     // Save the updated products list back to Redis
     await redis.set(cacheKey, JSON.stringify(orders), "EX", 3600);
 
-    return NextResponse.json({ id, ...orderData }, { status: 200 });
+    return NextResponse.json(order, { status: 200 });
   } catch (error) {
     console.log(`ORDERS_POST: ${error}`);
     return NextResponse.json("Internal Server Error", {

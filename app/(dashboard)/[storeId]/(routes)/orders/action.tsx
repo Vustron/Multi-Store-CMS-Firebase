@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/DropdownMenu";
 
-import { useDeleteSize } from "@/lib/hooks/api/sizes/useDeleteSize";
+import { useDeleteOrder } from "@/lib/hooks/api/orders/useDeleteOrder";
 import { Copy, MoreHorizontal, Trash, Pencil } from "lucide-react";
 import { useConfirm } from "@/lib/hooks/misc/useConfirm";
 import { useParams, useRouter } from "next/navigation";
@@ -31,11 +31,11 @@ const SizeActions = ({ data }: Props) => {
     ? params.storeId[0]
     : params.storeId;
   // init delete store hook
-  const deleteMutation = useDeleteSize(storeId, data.id);
+  const deleteMutation = useDeleteOrder(storeId, data.id);
   // confirm modal hook
   const [ConfirmDialog, confirm] = useConfirm(
     "Are you sure?",
-    "You are about to delete this size",
+    "You are about to delete this order",
   );
 
   const handleDelete = async () => {
@@ -43,8 +43,8 @@ const SizeActions = ({ data }: Props) => {
 
     if (ok) {
       await toast.promise(deleteMutation.mutateAsync(), {
-        loading: <span className="animate-pulse">Deleting Size...</span>,
-        success: "Size deleted",
+        loading: <span className="animate-pulse">Deleting Order...</span>,
+        success: "Order deleted",
         error: "Something went wrong",
       });
     }
@@ -52,7 +52,7 @@ const SizeActions = ({ data }: Props) => {
 
   const onCopy = (id: string) => {
     navigator.clipboard.writeText(id);
-    toast.success("Size ID copied");
+    toast.success("Order ID copied");
   };
 
   return (
@@ -76,7 +76,7 @@ const SizeActions = ({ data }: Props) => {
           </DropdownMenuItem>
           {/* edit */}
           <DropdownMenuItem
-            onClick={() => router.push(`/${params.storeId}/sizes/${data.id}`)}
+            onClick={() => router.push(`/${params.storeId}/orders/${data.id}`)}
           >
             <Pencil className="mr-2 size-4" />
             Edit

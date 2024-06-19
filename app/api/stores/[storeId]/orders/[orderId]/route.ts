@@ -28,15 +28,7 @@ export async function PATCH(
       return NextResponse.json("Unauthorized", { status: 401 });
     }
     // throw error if any required fields are missing
-    const requiredFields = [
-      "phone",
-      "address",
-      "products",
-      "totalPrice",
-      "images",
-      "isPaid",
-      "order_status",
-    ];
+    const requiredFields = ["order_status"];
     for (const field of requiredFields) {
       if (!body[field]) {
         return NextResponse.json(`Order ${field} is missing`, {
@@ -59,15 +51,7 @@ export async function PATCH(
       });
     }
     // assign data
-    const {
-      phone,
-      address,
-      products,
-      totalPrice,
-      images,
-      isPaid,
-      order_status,
-    } = body;
+    const { order_status } = body;
 
     const store = await getDoc(doc(db, "stores", params.storeId));
 
@@ -88,12 +72,6 @@ export async function PATCH(
         doc(db, "stores", params.storeId, "orders", params.orderId),
         {
           ...orderRef.data(),
-          phone,
-          address,
-          products,
-          totalPrice,
-          images,
-          isPaid,
           order_status,
           updatedAt: serverTimestamp(),
         },

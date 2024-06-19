@@ -40,7 +40,7 @@ export default function OrdersPage({ params }: Props) {
     images: item.orderItems.map((item) => item.images[0].url),
     createdAt: item.createdAt
       ? format(item.createdAt.toDate(), "MMMM dd yyyy")
-      : "",
+      : ``,
   }));
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { UpdateSizeFormSchema } from "@/components/forms/UpdateSizeForm";
+import { UpdateOrderFormSchema } from "@/components/forms/UpdateOrderForm";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -13,7 +13,7 @@ export const useUpdateOrder = (storeId?: string, orderId?: string) => {
   const router = useRouter();
 
   const mutation = useMutation({
-    mutationFn: async (values: z.infer<typeof UpdateSizeFormSchema>) => {
+    mutationFn: async (values: z.infer<typeof UpdateOrderFormSchema>) => {
       const { data } = await axios.patch(
         `/api/stores/${storeId}/orders/${orderId}`,
         values,

@@ -45,10 +45,10 @@ export const columns: ColumnDef<ProductColumns>[] = [
     cell: ({ row }) => {
       return (
         <Badge
-          variant={row.original.isFeatured ? "destructive" : "success"}
-          className="px-3.5 py-2.5 text-xs font-medium"
+          variant={row.original.isFeatured ? "success" : "destructive"}
+          className="text-md whitespace-nowrap font-medium"
         >
-          {row.original.isFeatured}
+          {row.original.isFeatured ? "Yes" : "No"}
         </Badge>
       );
     },
@@ -59,10 +59,10 @@ export const columns: ColumnDef<ProductColumns>[] = [
     cell: ({ row }) => {
       return (
         <Badge
-          variant={row.original.isArchived ? "destructive" : "success"}
-          className="px-3.5 py-2.5 text-xs font-medium"
+          variant={row.original.isArchived ? "success" : "destructive"}
+          className="text-md whitespace-nowrap font-medium"
         >
-          {row.original.isArchived}
+          {row.original.isArchived ? "Yes" : "No"}
         </Badge>
       );
     },
