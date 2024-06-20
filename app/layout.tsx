@@ -21,10 +21,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
     <ClerkProvider>
       <html lang="en">
+        <head>
+          <link rel="icon" href="/logo.svg" sizes="any" />
+        </head>
         <body className={`${poppins.className}`}>
           <QueryProvider>
             <ToastProvider />
